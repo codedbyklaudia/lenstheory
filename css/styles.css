@@ -409,12 +409,26 @@ p {
 .card {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  gap: var(--space-sm);
-  padding: var(--space-md);
+  overflow: hidden;
   background: var(--bg);
   border: 1px solid var(--line);
   border-radius: var(--radius);
+}
+
+.card__img {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  object-position: center 25%;
+}
+
+.card__body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-sm);
+  padding: var(--space-md);
 }
 
 .card p {
