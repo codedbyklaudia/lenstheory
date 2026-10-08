@@ -1,0 +1,646 @@
+/* ==========================================================================
+   Lens Theory: design tokens
+   ========================================================================== */
+
+:root {
+  /* Colour: ivory, warm black and antique gold */
+  --bg: #faf7f2;        /* warm ivory, not fully white */
+  --ink: #14110f;       /* warm near-black */
+  --ink-soft: #4a433c;  /* slightly lighter than ink, for secondary text */
+  --ember: #7d6128;     /* antique gold accent */
+  --gold: #dcc48e;      /* light champagne gold, for use on dark photos */
+  --clay: #eadfce;      /* soft champagne beige */
+  --line: #e6dfd3;      /* soft grey-white for borders and dividers */
+
+  /* Typography */
+  --font-display: "Fraunces", Georgia, "Times New Roman", serif;
+  --font-body: "DM Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  /* Spacing */
+  --space-xs: 0.5rem;
+  --space-sm: 1rem;
+  --space-md: 2rem;
+  --space-lg: 4rem;
+  --space-xl: 6rem;
+
+  /* Layout */
+  --max-width: 72rem;
+  --radius: 0.75rem;
+}
+
+/* ==========================================================================
+   Reset and base
+   ========================================================================== */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-body);
+  line-height: 1.6;
+  color: var(--ink);
+  background: var(--bg);
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+ul {
+  list-style: none;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  font-weight: 500;
+  line-height: 1.15;
+  color: var(--ink);
+}
+
+h1 {
+  font-size: clamp(2.75rem, 8vw, 5.5rem);
+  letter-spacing: -0.02em;
+}
+
+h2 {
+  font-size: clamp(1.75rem, 4vw, 2.5rem);
+}
+
+h3 {
+  font-size: 1.35rem;
+}
+
+p {
+  color: var(--ink-soft);
+}
+
+:focus-visible {
+  outline: 2px solid var(--ember);
+  outline-offset: 3px;
+}
+
+/* ==========================================================================
+   Layout helpers
+   ========================================================================== */
+
+.container {
+  width: 100%;
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0 var(--space-md);
+}
+
+.section {
+  padding: var(--space-xl) 0;
+}
+
+.section--clay {
+  background: var(--clay);
+}
+
+.section--clay p {
+  color: var(--ink);
+}
+
+.section__head {
+  max-width: 36rem;
+  margin-bottom: var(--space-md);
+}
+
+.section__head p {
+  margin-top: var(--space-xs);
+}
+
+.section__action {
+  margin-top: var(--space-md);
+}
+
+/* ==========================================================================
+   Header and navigation
+   ========================================================================== */
+
+.site-header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  border-bottom: 1px solid rgba(250, 247, 242, 0.25);
+}
+
+.nav {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-xs) var(--space-md);
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: var(--space-sm) var(--space-md);
+}
+
+.logo {
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: var(--bg);
+}
+
+.logo span {
+  color: var(--gold);
+}
+
+.nav__links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1.5rem;
+}
+
+.nav__links a {
+  color: rgba(250, 247, 242, 0.9);
+  font-weight: 500;
+}
+
+.nav__links a:hover {
+  color: var(--gold);
+}
+
+/* "Book a Session" button in the nav */
+.nav__links .nav__cta {
+  padding: 0.55rem 1.25rem;
+  background: var(--bg);
+  color: var(--ink);
+}
+
+.nav__links .nav__cta:hover {
+  background: var(--gold);
+  color: var(--ink);
+}
+
+/* ==========================================================================
+   Buttons
+   ========================================================================== */
+
+.btn-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+}
+
+.btn {
+  display: inline-block;
+  padding: 0.85rem 1.75rem;
+  border: 1.5px solid transparent;
+  border-radius: 999px;
+  font-family: var(--font-body);
+  font-size: 1rem;
+  font-weight: 500;
+  text-align: center;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.btn--primary {
+  background: var(--ink);
+  color: var(--bg);
+}
+
+.btn--primary:hover {
+  background: var(--ember);
+}
+
+.btn--ghost {
+  border-color: var(--ink);
+  color: var(--ink);
+}
+
+.btn--ghost:hover {
+  background: var(--ink);
+  color: var(--bg);
+}
+
+/* ==========================================================================
+   Hero (full screen)
+   ========================================================================== */
+
+.hero {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  align-items: center;
+  min-height: 100vh;
+  min-height: 100svh;
+  padding: 8rem 0 6rem;
+  overflow: hidden;
+  color: var(--bg);
+}
+
+/* Full-bleed background photo */
+.hero__bg {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 30%;
+}
+
+/* Dark gradient so the text stays readable on any photo */
+.hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(
+    to bottom,
+    rgba(20, 17, 15, 0.65) 0%,
+    rgba(20, 17, 15, 0.4) 45%,
+    rgba(20, 17, 15, 0.8) 100%
+  );
+}
+
+.hero h1 {
+  max-width: 14ch;
+  font-size: clamp(3.25rem, 10vw, 7.5rem);
+  color: var(--bg);
+}
+
+.eyebrow {
+  margin-bottom: var(--space-sm);
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+
+.accent {
+  color: var(--gold);
+  font-style: italic;
+}
+
+.hero__text {
+  max-width: 34rem;
+  margin: var(--space-md) 0;
+  font-size: 1.2rem;
+  color: rgba(250, 247, 242, 0.9);
+}
+
+/* Buttons on the dark photo */
+.hero .btn--primary {
+  background: var(--bg);
+  color: var(--ink);
+}
+
+.hero .btn--primary:hover {
+  background: var(--gold);
+}
+
+.hero .btn--ghost {
+  border-color: var(--bg);
+  color: var(--bg);
+}
+
+.hero .btn--ghost:hover {
+  background: var(--bg);
+  color: var(--ink);
+}
+
+/* Scroll cue */
+.hero__scroll {
+  position: absolute;
+  bottom: 1.5rem;
+  left: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  transform: translateX(-50%);
+  font-size: 0.75rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(250, 247, 242, 0.85);
+}
+
+.hero__scroll::after {
+  content: "";
+  width: 1px;
+  height: 2.5rem;
+  background: var(--gold);
+  transform-origin: top;
+  animation: scroll-line 2s ease-in-out infinite;
+}
+
+@keyframes scroll-line {
+  0%   { transform: scaleY(0); }
+  60%  { transform: scaleY(1); }
+  100% { transform: scaleY(1); opacity: 0; }
+}
+
+/* ==========================================================================
+   Image placeholders (remove once real photos are added)
+   ========================================================================== */
+
+.placeholder {
+  width: 100%;
+  height: 100%;
+  background: var(--clay);
+  border-radius: var(--radius);
+}
+
+/* ==========================================================================
+   Gallery
+   ========================================================================== */
+
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-sm);
+}
+
+.gallery__item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.gallery__item .placeholder,
+.gallery__item img {
+  aspect-ratio: 4 / 5;
+  width: 100%;
+  object-fit: cover;
+  border-radius: var(--radius);
+}
+
+.gallery figcaption {
+  font-size: 0.9rem;
+  color: var(--ink-soft);
+}
+
+/* ==========================================================================
+   Services cards
+   ========================================================================== */
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-md);
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-sm);
+  padding: var(--space-md);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.card p {
+  color: var(--ink-soft);
+}
+
+.card__meta {
+  margin-top: auto;
+  font-weight: 700;
+  color: var(--ember);
+}
+
+/* ==========================================================================
+   Contact call to action
+   ========================================================================== */
+
+.cta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-sm);
+  max-width: 44rem;
+}
+
+/* ==========================================================================
+   Footer
+   ========================================================================== */
+
+.site-footer {
+  padding: var(--space-lg) 0 var(--space-md);
+  border-top: 1px solid var(--line);
+}
+
+/* Newsletter */
+.newsletter {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-md);
+  padding-bottom: var(--space-lg);
+  margin-bottom: var(--space-md);
+  border-bottom: 1px solid var(--line);
+}
+
+.newsletter__text {
+  flex: 1 1 20rem;
+  max-width: 30rem;
+}
+
+.newsletter__text p {
+  margin-top: var(--space-xs);
+}
+
+.newsletter__form {
+  display: flex;
+  flex: 1 1 22rem;
+  max-width: 30rem;
+  gap: var(--space-xs);
+}
+
+.newsletter__form input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.85rem 1.25rem;
+  border: 1.5px solid var(--line);
+  border-radius: 999px;
+  background: var(--bg);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  color: var(--ink);
+}
+
+.newsletter__form input::placeholder {
+  color: var(--ink-soft);
+  opacity: 0.7;
+}
+
+.newsletter__form input:focus {
+  outline: none;
+  border-color: var(--ember);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.footer__inner {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.footer__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.5rem;
+}
+
+.footer__links a:hover {
+  color: var(--ember);
+}
+
+/* ==========================================================================
+   Responsive
+   ========================================================================== */
+
+/* Tablet */
+@media (max-width: 62rem) {
+  .cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .gallery {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* Third photo spans the full row so the grid has no gap */
+  .gallery__item:last-child:nth-child(odd) {
+    grid-column: span 2;
+  }
+
+  .gallery__item:last-child:nth-child(odd) img {
+    aspect-ratio: 8 / 5;
+  }
+}
+
+/* Mobile */
+@media (max-width: 40rem) {
+  :root {
+    --space-md: 1.25rem;
+    --space-lg: 2.5rem;
+    --space-xl: 3.5rem;
+  }
+
+  .nav {
+    justify-content: center;
+    text-align: center;
+  }
+
+  .nav__links {
+    justify-content: center;
+    gap: 0.5rem 1.25rem;
+  }
+
+  .footer__links {
+    justify-content: center;
+  }
+
+  .hero {
+    padding: 9rem 0 6rem;
+  }
+
+  .btn-group {
+    flex-direction: column;
+  }
+
+  .btn-group .btn,
+  .cta .btn {
+    width: 100%;
+  }
+
+  .gallery {
+    grid-template-columns: 1fr;
+  }
+
+  .gallery__item:last-child:nth-child(odd) {
+    grid-column: auto;
+  }
+
+  .gallery__item:last-child:nth-child(odd) img {
+    aspect-ratio: 4 / 5;
+  }
+
+  .cards {
+    grid-template-columns: 1fr;
+  }
+
+  .card .btn {
+    width: 100%;
+  }
+
+  .newsletter__form {
+    flex-direction: column;
+    max-width: none;
+  }
+
+  .newsletter__form .btn {
+    width: 100%;
+  }
+
+  .footer__inner {
+    flex-direction: column;
+    text-align: center;
+  }
+}
+
+/* Short screens, e.g. phones in landscape */
+@media (max-height: 36rem) {
+  .hero {
+    min-height: auto;
+  }
+
+  .hero__scroll {
+    display: none;
+  }
+}
+
+/* Respect reduced-motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .btn {
+    transition: none;
+  }
+
+  .hero__scroll::after {
+    animation: none;
+  }
+}

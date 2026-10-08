@@ -9,13 +9,13 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Fraunces:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
 
   <header class="site-header">
     <nav class="nav" aria-label="Main navigation">
-      <a href="index.html" class="logo">Lens <span>Theory</span></a>
+      <a href="index.html" class="logo">Lens<span>Theory</span></a>
       <ul class="nav__links">
         <li><a href="#gallery">Gallery</a></li>
         <li><a href="#about">About</a></li>
@@ -29,12 +29,14 @@
   <main>
 
     <!-- Hero -->
-    <section class="hero">
-      <div class="container">
+    <section class="hero" aria-labelledby="hero-title">
+      <img class="hero__bg" src="images/hero-pic.jpg" alt="">
+
+      <div class="container hero__content">
         <p class="eyebrow">Photography studio</p>
-        <h1>Seeing, <span class="accent">considered.</span></h1>
+        <h1 id="hero-title">Photography with <span class="accent">presence.</span></h1>
         <p class="hero__text">
-          Portraits, events and brand imagery shaped by a clear point of view.
+          Portraits, weddings and family stories shaped by a clear point of view.
           Thoughtful light, honest moments, and photographs made to last.
         </p>
         <div class="btn-group">
@@ -43,10 +45,9 @@
         </div>
       </div>
 
-      <div class="container">
-        <!-- Swap the placeholder for: <img src="images/hero.jpg" alt="Describe the photo"> -->
-        <div class="hero__media placeholder" role="img" aria-label="Featured photograph placeholder"></div>
-      </div>
+      <a href="#gallery" class="hero__scroll" aria-label="Scroll to the gallery">
+        <span>Scroll</span>
+      </a>
     </section>
 
     <!-- Gallery -->
@@ -121,8 +122,8 @@
           </article>
 
           <article class="card">
-            <h3>Weddings and family sessions</h3>
-            <p>Sessions for couples, families and special occasions.</p>
+            <h3>Brand &amp; commercial</h3>
+            <p>Product, team and campaign imagery that gives your business a consistent look.</p>
             <p class="card__meta">Custom quote</p>
             <a href="#contact" class="btn btn--primary">Get a quote</a>
           </article>
@@ -134,7 +135,7 @@
     <section class="section" id="contact">
       <div class="container cta">
         <h2>Let's make something worth framing.</h2>
-        <p>Tell us about your needs and we will get back to you within two working days.</p>
+        <p>Tell us about your project and we will get back to you within two working days.</p>
         <a href="mailto:hello@lenstheory.co.uk" class="btn btn--primary">Email the studio</a>
       </div>
     </section>
