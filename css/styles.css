@@ -156,6 +156,7 @@ p {
 
 .section__head p:not(.eyebrow) {
   margin-top: var(--space-xs);
+  text-wrap: balance;
 }
 
 .section__action {
@@ -612,11 +613,20 @@ p {
   box-shadow: 0 1.25rem 2.5rem rgba(26, 21, 18, 0.15);
 }
 
+.card__media {
+  overflow: hidden;
+}
+
 .card__img {
   width: 100%;
   aspect-ratio: 4 / 3;
   object-fit: cover;
   object-position: center 25%;
+  transition: transform 0.8s ease;
+}
+
+.card:hover .card__img {
+  transform: scale(1.05);
 }
 
 .card__body {
@@ -628,14 +638,77 @@ p {
   padding: var(--space-md);
 }
 
-.card__meta {
-  margin-top: auto;
+.card__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: var(--space-sm);
+  font-size: 0.95rem;
+  color: var(--ink-soft);
+}
+
+.card__list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+}
+
+.card__list li::before {
+  content: "\2713";
+  flex-shrink: 0;
   font-weight: 700;
   color: var(--ember);
 }
 
-.card__body .btn {
-  margin-top: 0.25rem;
+/* Price and button share a row, pinned to the bottom so all cards line up */
+.card__footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-sm);
+  width: 100%;
+  margin-top: auto;
+  padding-top: var(--space-sm);
+  border-top: 1px solid var(--line);
+}
+
+.card__price {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.card__label {
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.card__price strong {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.services__note {
+  margin-top: var(--space-md);
+  text-align: center;
+  color: var(--ink-soft);
+}
+
+.services__note a {
+  font-weight: 500;
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-color: var(--ember);
+  text-underline-offset: 0.25em;
+}
+
+.services__note a:hover {
+  color: var(--ember);
 }
 
 /* ==========================================================================
@@ -1017,7 +1090,6 @@ p {
   }
 
   .btn-group .btn,
-  .card .btn,
   .form .btn {
     width: 100%;
   }
