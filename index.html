@@ -3,19 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Lens Theory is a photography studio. Seeing, considered.">
+  <meta name="description" content="Lens Theory is a photography studio for portraits, weddings and family sessions.">
   <title>Lens Theory | Photography Studio</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Fraunces:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Fraunces:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
 
   <header class="site-header">
     <nav class="nav" aria-label="Main navigation">
-      <a href="index.html" class="logo">Lens<span>Theory</span></a>
+      <a href="index.html" class="logo">Lens <span>Theory</span></a>
       <ul class="nav__links">
         <li><a href="#gallery">Gallery</a></li>
         <li><a href="#about">About</a></li>
@@ -30,11 +30,10 @@
 
     <!-- Hero -->
     <section class="hero" aria-labelledby="hero-title">
-      <img class="hero__bg" src="images/studio-1.avif" alt="Studio">
+      <img class="hero__bg" src="images/studio-1.avif" alt="Studio photograph by Lens Theory" loading="lazy">
 
       <div class="container hero__content">
-        <p class="eyebrow">Photography studio</p>
-        <h1 id="hero-title">Photography with <span class="accent">presence.</span></h1>
+        <h1 id="hero-title">Portraits that feel <span class="accent">like you.</span></h1>
         <p class="hero__text">
           Portraits, weddings and family stories shaped by a clear point of view.
           Thoughtful light, honest moments, and photographs made to last.
@@ -50,51 +49,68 @@
       </a>
     </section>
 
+    <!-- Specialisms band -->
+    <section class="band" aria-label="What we photograph">
+      <ul class="band__list">
+        <li>Portraits</li>
+        <li>Weddings</li>
+        <li>Family sessions</li>
+        <li>Events</li>
+      </ul>
+    </section>
+
     <!-- Gallery -->
     <section class="section" id="gallery">
       <div class="container">
         <div class="section__head">
+          <p class="eyebrow">Gallery</p>
           <h2>Selected work</h2>
-          <p>A look at recent sessions across portraits, events and commercial projects.</p>
+          <p>A look at recent sessions, from quiet portraits to full wedding days.</p>
         </div>
 
         <div class="gallery">
-          <figure class="gallery__item">
-            <img src="images/portrait-photo.jpg" alt="Portrait photograph by Lens Theory" loading="lazy">
-            <figcaption>Portraits</figcaption>
-          </figure>
-          <figure class="gallery__item">
-            <img src="images/wedding-photo.jpeg" alt="Wedding photograph by Lens Theory" loading="lazy">
+          <figure class="gallery__item reveal">
+            <img src="images/services-1.jpg" alt="Wedding photograph by Lens Theory" loading="lazy">
             <figcaption>Weddings</figcaption>
           </figure>
-          <figure class="gallery__item">
-            <img src="images/family-photo.jpg" alt="Family photograph by Lens Theory" loading="lazy">
+          <figure class="gallery__item reveal">
+            <img src="images/services-2.jpg" alt="Portrait photograph by Lens Theory" loading="lazy">
+            <figcaption>Portraits</figcaption>
+          </figure>
+          <figure class="gallery__item reveal">
+            <img src="images/services-3.jpg" alt="Family photograph by Lens Theory" loading="lazy">
             <figcaption>Family sessions</figcaption>
           </figure>
         </div>
 
         <div class="section__action">
-          <a href="#" class="btn btn--ghost">See the full portfolio</a>
+          <a href="#" class="btn btn--ghost">See the full gallery</a>
         </div>
       </div>
     </section>
 
     <!-- About -->
-    <section class="section" id="about">
-      <div class="container">
-        <div class="section__head">
-          <h2>About Lens Theory</h2>
+    <section class="section section--tint" id="about">
+      <div class="container about">
+        <figure class="about__media reveal">
+          <img src="images/portrait-photo.jpg" alt="Portrait photograph by Lens Theory" loading="lazy">
+        </figure>
+
+        <div class="about__text reveal">
+          <p class="eyebrow">About</p>
+          <h2>Every good photograph starts with a point of view</h2>
           <p>
-            Lens Theory is a photography studio built on a simple idea: every good photograph
-            starts with a point of view. We take the time to understand the people and stories
-            in front of the camera, then shape light, framing and timing around them.
+            Lens Theory is a photography studio built on honest moments and considered light.
+            We take time to understand the people in front of the camera, then shape every
+            frame around them, so the images still feel like you years from now.
           </p>
-          <p>
-            The result is honest, considered imagery that feels like you, and holds up long
-            after the day itself.
-          </p>
+          <ul class="about__tags">
+            <li>Natural light</li>
+            <li>Honest moments</li>
+            <li>Timeless edit</li>
+          </ul>
+          <a href="#contact" class="btn btn--ghost">Get in touch</a>
         </div>
-        <a href="#contact" class="btn btn--ghost">Get in touch</a>
       </div>
     </section>
 
@@ -102,13 +118,14 @@
     <section class="section section--clay" id="services">
       <div class="container">
         <div class="section__head">
-          <h2>Services</h2>
+          <p class="eyebrow">Services</p>
+          <h2>Choose your session</h2>
           <p>Every shoot starts with a conversation about what you need the images to do.</p>
         </div>
 
         <div class="cards">
-          <article class="card">
-            <img class="card__img" src="images/services-1.jpg" alt="Portrait photograph by Lens Theory" loading="lazy">
+          <article class="card reveal">
+            <img class="card__img" src="images/portrait-photo.jpg" alt="Portrait photograph by Lens Theory" loading="lazy">
             <div class="card__body">
               <h3>Portraits</h3>
               <p>Individual and personal-brand portraits in the studio or on location.</p>
@@ -117,8 +134,8 @@
             </div>
           </article>
 
-          <article class="card">
-            <img class="card__img" src="images/services-2.jpg" alt="Wedding photograph by Lens Theory" loading="lazy">
+          <article class="card reveal">
+            <img class="card__img" src="images/wedding-photo.jpeg" alt="Wedding photograph by Lens Theory" loading="lazy">
             <div class="card__body">
               <h3>Weddings</h3>
               <p>Relaxed, documentary-style coverage from the first look to the last dance.</p>
@@ -127,8 +144,8 @@
             </div>
           </article>
 
-          <article class="card">
-            <img class="card__img" src="images/services-3.jpg" alt="Family photograph by Lens Theory" loading="lazy">
+          <article class="card reveal">
+            <img class="card__img" src="images/family-photo.jpg" alt="Family photograph by Lens Theory" loading="lazy">
             <div class="card__body">
               <h3>Family sessions</h3>
               <p>Natural, unposed family photographs at home, outdoors or in the studio.</p>
@@ -140,12 +157,127 @@
       </div>
     </section>
 
-    <!-- Contact -->
-    <section class="section" id="contact">
-      <div class="container cta">
-        <h2>Let's make something worth framing.</h2>
-        <p>Tell us about your project and we will get back to you within two working days.</p>
-        <a href="mailto:hello@lenstheory.co.uk" class="btn btn--primary">Email the studio</a>
+    <!-- Process -->
+    <section class="section" id="process">
+      <div class="container">
+        <div class="section__head">
+          <p class="eyebrow">How it works</p>
+          <h2>From first hello to final gallery</h2>
+        </div>
+
+        <ol class="process">
+          <li class="reveal">
+            <h3>Enquire</h3>
+            <p>Tell us what you have in mind and your preferred date. We reply within two working days.</p>
+          </li>
+          <li class="reveal">
+            <h3>Plan</h3>
+            <p>We talk through the look, the location and the timing, so the day feels easy.</p>
+          </li>
+          <li class="reveal">
+            <h3>Shoot &amp; deliver</h3>
+            <p>Relax in front of the camera. Your edited gallery follows, ready to share and print.</p>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="section section--tint" id="faq">
+      <div class="container faq">
+        <div class="faq__intro reveal">
+          <p class="eyebrow">FAQ</p>
+          <h2>Good to know before you book</h2>
+          <p>Can't find what you are looking for? Send us a message and we will happily help.</p>
+          <a href="#contact" class="btn btn--ghost">Ask a question</a>
+        </div>
+
+        <div class="faq__list reveal">
+          <details class="faq__item" open>
+            <summary>How far in advance should I book?</summary>
+            <p>Weddings book up early, so get in touch as soon as you have a date. Portrait and family sessions can often be arranged within a few weeks.</p>
+          </details>
+          <details class="faq__item">
+            <summary>Do you shoot on location?</summary>
+            <p>Yes. We photograph in the studio and on location. Travel beyond the local area is quoted individually.</p>
+          </details>
+          <details class="faq__item">
+            <summary>When will I receive my photos?</summary>
+            <p>Most sessions are delivered within two to three weeks. Weddings can take a little longer, and we will always give you a date upfront.</p>
+          </details>
+          <details class="faq__item">
+            <summary>What should I wear?</summary>
+            <p>Choose outfits you feel comfortable in. Soft, solid colours photograph beautifully, and we are happy to help you plan before the day.</p>
+          </details>
+          <details class="faq__item">
+            <summary>Can I print my photos?</summary>
+            <p>Yes. You receive high-resolution images that are ready for printing and sharing.</p>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <!-- Contact / booking -->
+    <section class="section section--dark" id="contact">
+      <div class="container contact">
+        <div class="contact__intro reveal">
+          <p class="eyebrow">Book a session</p>
+          <h2>Let's make something worth framing</h2>
+          <p>Tell us about your shoot and we will get back to you within two working days.</p>
+
+          <ul class="contact__details">
+            <li>
+              <span>Email</span>
+              <a href="mailto:hello@lenstheory.co.uk">hello@lenstheory.co.uk</a>
+            </li>
+            <li>
+              <span>Reply time</span>
+              Within two working days
+            </li>
+            <li>
+              <span>Sessions</span>
+              Studio and on location
+            </li>
+          </ul>
+        </div>
+
+        <!-- Replace action with your form service (Formspree, Netlify Forms, etc.) -->
+        <form class="form reveal" action="#" method="post">
+          <div class="form__field">
+            <label for="name">Name</label>
+            <input type="text" id="name" name="name" autocomplete="name" required>
+          </div>
+
+          <div class="form__field">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" autocomplete="email" required>
+          </div>
+
+          <div class="form__field">
+            <label for="type">Type of shoot</label>
+            <select id="type" name="type" required>
+              <option value="" disabled selected>Choose one</option>
+              <option>Portrait</option>
+              <option>Wedding</option>
+              <option>Family session</option>
+              <option>Something else</option>
+            </select>
+          </div>
+
+          <div class="form__field">
+            <label for="date">Preferred date</label>
+            <input type="date" id="date" name="date">
+          </div>
+
+          <div class="form__field form__field--full">
+            <label for="message">Tell us about your shoot</label>
+            <textarea id="message" name="message" rows="5" required></textarea>
+          </div>
+
+          <div class="form__field form__field--full">
+            <button type="submit" class="btn btn--primary">Send enquiry</button>
+          </div>
+        </form>
       </div>
     </section>
 
