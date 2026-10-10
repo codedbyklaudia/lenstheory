@@ -13,7 +13,7 @@
 </head>
 <body>
 
-  <header class="site-header">
+  <header class="site-header" id="top">
     <nav class="nav" aria-label="Main navigation">
       <a href="index.html" class="logo">Lens <span>Theory</span></a>
       <ul class="nav__links">
@@ -85,7 +85,7 @@
         </div>
 
         <div class="section__action">
-          <a href="#" class="btn btn--ghost">See the full portfolio</a>
+          <a href="#portfolio" class="btn btn--ghost">See the full portfolio</a>
         </div>
       </div>
     </section>
@@ -282,6 +282,33 @@
       </div>
     </section>
 
+    <!-- Portfolio grid: photos only -->
+    <section class="section" id="portfolio" aria-label="Portfolio">
+      <div class="container">
+        <div class="mosaic">
+          <!-- Swap each file name for a different photo. Sizes: 1 and 3 tall, 2 and 4 small, 5 small, 6 wide. -->
+          <figure class="mosaic__item reveal">
+            <img src="images/portrait-1.jpg" alt="Portrait photograph by Lens Theory" loading="lazy">
+          </figure>
+          <figure class="mosaic__item reveal">
+            <img src="images/portrait-2.jpg" alt="Wedding photograph by Lens Theory" loading="lazy">
+          </figure>
+          <figure class="mosaic__item reveal">
+            <img src="images/wedding-1.webp" alt="Family photograph by Lens Theory" loading="lazy">
+          </figure>
+          <figure class="mosaic__item reveal">
+            <img src="images/pet.webp" alt="Studio photograph by Lens Theory" loading="lazy">
+          </figure>
+          <figure class="mosaic__item reveal">
+            <img src="images/family-photo.jpg" alt="Family photograph by Lens Theory" loading="lazy" style="object-position: center 60%;">
+          </figure>
+          <figure class="mosaic__item reveal">
+            <img src="images/event-1.jpg" alt="Wedding photograph by Lens Theory" loading="lazy" style="object-position: center 40%;">
+          </figure>
+        </div>
+      </div>
+    </section>
+
     <!-- Contact / booking -->
     <section class="section section--dark" id="contact">
       <div class="container contact">
@@ -294,14 +321,6 @@
             <li>
               <span>Email</span>
               <a href="mailto:hello@lenstheory.co.uk">hello@lenstheory.co.uk</a>
-            </li>
-            <li>
-              <span>Reply time</span>
-              Within two working days
-            </li>
-            <li>
-              <span>Sessions</span>
-              Studio and on location
             </li>
           </ul>
         </div>
@@ -339,8 +358,9 @@
             <textarea id="message" name="message" rows="5" required></textarea>
           </div>
 
-          <div class="form__field form__field--full">
+          <div class="form__field form__field--full form__submit">
             <button type="submit" class="btn btn--primary">Send enquiry</button>
+            <p class="form__note">We reply within two working days. Your details are only used to answer your enquiry.</p>
           </div>
         </form>
       </div>
@@ -373,15 +393,36 @@
         </form>
       </div>
 
-      <div class="footer__inner">
-        <p>&copy; 2026 Lens Theory</p>
-        <ul class="footer__links">
-          <li><a href="#gallery">Gallery</a></li>
-          <li><a href="#about">About</a></li>
-          <li><a href="#services">Services</a></li>
-          <li><a href="#contact">Contact</a></li>
-          <li><a href="#contact">Book a Session</a></li>
-        </ul>
+      <!-- Footer columns -->
+      <div class="footer__grid">
+        <div class="footer__brand">
+          <a href="#top" class="logo">Lens <span>Theory</span></a>
+          <p>A photography studio for portraits, weddings and family sessions, in the studio and on location.</p>
+        </div>
+
+        <nav class="footer__col" aria-label="Footer navigation">
+          <h3>Explore</h3>
+          <ul class="footer__links">
+            <li><a href="#gallery">Gallery</a></li>
+            <li><a href="#about">About</a></li>
+            <li><a href="#services">Services</a></li>
+            <li><a href="#contact">Contact</a></li>
+            <li><a href="#contact">Book a Session</a></li>
+          </ul>
+        </nav>
+
+        <div class="footer__col">
+          <h3>Get in touch</h3>
+          <ul class="footer__links">
+            <li><a href="mailto:hello@lenstheory.co.uk">hello@lenstheory.co.uk</a></li>
+            <li>Replies within two working days</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer__bottom">
+        <p>&copy; 2026 Lens Theory. All rights reserved.</p>
+        <a href="#top">Back to top &uarr;</a>
       </div>
 
     </div>
