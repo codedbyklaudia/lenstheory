@@ -83,6 +83,7 @@ h1 {
 
 h2 {
   font-size: clamp(1.75rem, 4vw, 2.75rem);
+  text-wrap: balance;
 }
 
 h3 {
@@ -163,6 +164,18 @@ p {
   margin-top: var(--space-md);
 }
 
+.section__action--center {
+  margin-top: var(--space-lg);
+  text-align: center;
+}
+
+.section__head--center {
+  max-width: 40rem;
+  margin-right: auto;
+  margin-left: auto;
+  text-align: center;
+}
+
 .eyebrow {
   margin-bottom: var(--space-sm);
   font-size: 0.85rem;
@@ -178,6 +191,45 @@ p {
 
 .section--dark .eyebrow {
   color: var(--gold);
+}
+
+/* Section labels: numbered, with a short line after the text.
+   Numbers count up automatically (01, 02, 03...) in page order. */
+main {
+  counter-reset: eyebrow;
+}
+
+.section .eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: fit-content;
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+}
+
+.section .eyebrow::before {
+  counter-increment: eyebrow;
+  content: "0" counter(eyebrow);
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+.section .eyebrow::after {
+  content: "";
+  width: 2.5rem;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.6;
+}
+
+.section__head--center .eyebrow {
+  margin-right: auto;
+  margin-left: auto;
 }
 
 /* ==========================================================================
@@ -542,8 +594,12 @@ p {
 .about {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  align-items: stretch;
+  align-items: center;
   gap: var(--space-lg);
+}
+
+.about__media {
+  position: relative;
 }
 
 .about__media img {
@@ -556,36 +612,67 @@ p {
   outline-offset: 0.6rem;
 }
 
+/* Small caption card on the photo */
+.about__badge {
+  position: absolute;
+  bottom: 1.25rem;
+  left: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.9rem 1.25rem;
+  border-radius: 0.6rem;
+  background: rgba(248, 243, 235, 0.92);
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  color: var(--ink-soft);
+}
+
+.about__badge-title {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-style: italic;
+  letter-spacing: 0;
+  color: var(--ink);
+}
+
 .about__text {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: 1.25rem;
-  padding: 0.6rem 0;
 }
 
 .about__text .eyebrow {
   margin-bottom: 0;
 }
 
-.about__tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-  margin-bottom: var(--space-md);
+/* Three short points, separated by hairlines */
+.about__points {
+  width: 100%;
+  margin: var(--space-xs) 0;
 }
 
-/* Button sits level with the bottom edge of the photo */
-.about__text .btn {
-  margin-top: auto;
+.about__points li {
+  display: grid;
+  grid-template-columns: minmax(7rem, 9rem) 1fr;
+  align-items: baseline;
+  gap: var(--space-sm);
+  padding: 1rem 0;
+  border-top: 1px solid rgba(26, 21, 18, 0.15);
 }
 
-.about__tags li {
-  padding: 0.35rem 1rem;
-  border: 1px solid var(--ember);
-  border-radius: 999px;
-  font-size: 0.9rem;
+.about__points li:last-child {
+  border-bottom: 1px solid rgba(26, 21, 18, 0.15);
+}
+
+.about__points h3 {
+  font-size: 1.15rem;
   color: var(--ember);
+}
+
+.about__points p {
+  font-size: 0.95rem;
 }
 
 /* ==========================================================================
@@ -712,7 +799,7 @@ p {
 }
 
 /* ==========================================================================
-   Process
+   Process (dark section with numbered cards)
    ========================================================================== */
 
 .process {
@@ -723,24 +810,62 @@ p {
 }
 
 .process li {
-  padding-top: var(--space-sm);
-  border-top: 1px solid var(--ink);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  padding: var(--space-md);
+  border: 1px solid rgba(248, 243, 235, 0.15);
+  border-radius: var(--radius);
+  background: rgba(248, 243, 235, 0.04);
+  transition: border-color 0.3s ease, transform 0.3s ease;
 }
 
+.process li:hover {
+  border-color: rgba(227, 201, 160, 0.6);
+  transform: translateY(-4px);
+}
+
+/* Numbered circle */
 .process li::before {
   counter-increment: step;
   content: "0" counter(step);
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.25rem;
+  height: 3.25rem;
   margin-bottom: var(--space-sm);
+  border: 1px solid var(--gold);
+  border-radius: 50%;
   font-family: var(--font-display);
-  font-size: 3rem;
+  font-size: 1.25rem;
   font-style: italic;
-  line-height: 1;
-  color: var(--ember);
+  color: var(--gold);
 }
 
-.process h3 {
-  margin-bottom: var(--space-xs);
+/* Thin line leading out from the circle */
+.process li::after {
+  content: "";
+  position: absolute;
+  top: calc(var(--space-md) + 1.625rem);
+  right: var(--space-md);
+  left: calc(var(--space-md) + 3.25rem + 0.75rem);
+  height: 1px;
+  background: linear-gradient(to right, rgba(227, 201, 160, 0.5), transparent);
+}
+
+.process p {
+  text-wrap: pretty;
+}
+
+.process__meta {
+  margin-top: auto;
+  padding-top: var(--space-sm);
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gold);
 }
 
 /* ==========================================================================
@@ -1031,6 +1156,11 @@ p {
   .contact {
     grid-template-columns: 1fr;
     gap: var(--space-md);
+  }
+
+  .about__points li {
+    grid-template-columns: 1fr;
+    gap: 0.25rem;
   }
 }
 
