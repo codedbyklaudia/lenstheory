@@ -3,11 +3,13 @@ import Button from './Button'
 import HoursStepper from './HoursStepper'
 
 export default function ServiceCard({ service, onAddToBasket, onShowTerms, onEnquire }) {
+  // STATE: how many hours this card's stepper is set to.
+  // Every card has its OWN copy of this state, because each card is its own component instance.
   const [hours, setHours] = useState(1)
 
   function handleAdd() {
-    onAddToBasket(service, hours) 
-    setHours(1) 
+    onAddToBasket(service, hours) // tell the parent (App) what to put in the basket
+    setHours(1) // reset this card's stepper
   }
 
   return (
@@ -52,9 +54,7 @@ export default function ServiceCard({ service, onAddToBasket, onShowTerms, onEnq
               <div className="flex items-center justify-between gap-4">
                 <div className="flex flex-col leading-tight">
                   <span className="text-xs uppercase tracking-[0.12em] text-ink-soft">Per hour</span>
-                  <strong className="font-display text-2xl font-medium text-ink">
-                    £{service.pricePerHour}
-                  </strong>
+                  <strong className="font-display text-2xl font-medium text-ink">£{service.pricePerHour}</strong>
                 </div>
 
                 {/* Controlled component: this card owns `hours`, the stepper just displays it */}

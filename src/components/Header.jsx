@@ -55,8 +55,7 @@ export default function Header({ basketCount, onOpenBasket }) {
 
   const closeMenu = () => setIsMenuOpen(false)
 
-  // The header is see-through over the hero photo, and turns solid cream once you scroll
-  // (or when the mobile menu is open, so the text is always readable).
+  // See-through over the hero photo, solid cream once you scroll (or when the mobile menu is open).
   const isSolid = isScrolled || isMenuOpen
 
   const linkClasses =

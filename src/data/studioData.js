@@ -1,3 +1,10 @@
+// ============================================================================
+// All site content lives in this one file, as plain arrays of objects.
+// Components loop over these arrays with .map(), so adding an object here adds
+// a card, a photo, a question... to the page. No copy-pasted JSX.
+// (In Week 3 these arrays are what a backend would send instead.)
+// ============================================================================
+
 export const MAX_HOURS = 10
 
 export const navLinks = [
@@ -7,21 +14,26 @@ export const navLinks = [
   { label: 'Contact', href: '#contact' },
 ]
 
-export const specialisms = ['Portraits', 'Weddings', 'Family sessions', 'Events']
-
-// Gallery: the main grid, filtered by `category`
+// ---- Gallery: the main grid, filtered by `category` ------------------------
+// To add a photo: put the file in public/images and add one line here.
+// `shape` ('tall', 'portrait' or 'square') sets the photo's height in the masonry grid.
+// A new category name automatically creates a new filter button.
 export const galleryPhotos = [
-  { id: 'photo-1', src: '/images/portrait-photo.jpg', alt: 'Portrait photograph by Lens Theory', category: 'Portraits' },
-  { id: 'photo-2', src: '/images/wedding-photo.jpeg', alt: 'Wedding photograph by Lens Theory', category: 'Weddings' },
-  { id: 'photo-3', src: '/images/family-photo.jpg', alt: 'Family photograph by Lens Theory', category: 'Family' },
-  { id: 'photo-4', src: '/images/portrait-1.jpg', alt: 'Portrait photograph by Lens Theory', category: 'Portraits' },
-  { id: 'photo-5', src: '/images/wedding-1.webp', alt: 'Wedding photograph by Lens Theory', category: 'Weddings' },
-  { id: 'photo-6', src: '/images/event-1.jpg', alt: 'Event photograph by Lens Theory', category: 'Events' },
-  { id: 'photo-7', src: '/images/portrait-2.jpg', alt: 'Portrait photograph by Lens Theory', category: 'Portraits' },
-  { id: 'photo-8', src: '/images/pet.webp', alt: 'Pet photograph by Lens Theory', category: 'Pets' },
+  { id: 'photo-1', src: '/images/portrait-photo.jpg', alt: 'Studio portrait of a young woman in a lace blouse against a dark backdrop', category: 'Portraits', shape: 'tall' },
+  { id: 'photo-2', src: '/images/wedding-photo.jpeg', alt: 'Bride and groom walking hand in hand through a stone garden', category: 'Weddings', shape: 'portrait' },
+  { id: 'photo-3', src: '/images/family-photo.jpg', alt: 'Family of four sitting together in a field of tall grass', category: 'Family', shape: 'square' },
+  { id: 'photo-4', src: '/images/portrait-1.jpg', alt: 'Young woman with glasses in a red top, lit by neon light', category: 'Portraits', shape: 'tall' },
+  { id: 'photo-5', src: '/images/family-5.jpg', alt: 'Family photograph by Lens Theory', category: 'Family', shape: 'portrait' },
+  { id: 'photo-6', src: '/images/event-1.jpg', alt: 'Graduates throwing their caps in the air, in black and white', category: 'Events', shape: 'square' },
+  { id: 'photo-7', src: '/images/wedding-1.webp', alt: 'Bride and groom kissing under a flower-covered arch', category: 'Weddings', shape: 'portrait' },
+  { id: 'photo-8', src: '/images/pet.webp', alt: 'Golden retriever peeking out from behind a mossy tree', category: 'Pets', shape: 'tall' },
+  { id: 'photo-9', src: '/images/family-7.jpg', alt: 'Family photograph by Lens Theory', category: 'Family', shape: 'square' },
+  { id: 'photo-10', src: '/images/portrait-2.jpg', alt: 'Close portrait of an older man with a long beard holding a pipe', category: 'Portraits', shape: 'portrait' },
+  { id: 'photo-11', src: '/images/wedding-4.webp', alt: 'Wedding photograph by Lens Theory', category: 'Weddings', shape: 'tall' },
+  { id: 'photo-12', src: '/images/event-3.jpg', alt: 'Event photograph by Lens Theory', category: 'Events', shape: 'square' },
 ]
 
-// Services: priced per hour. bookable: false means "enquire only" 
+// ---- Services: priced per hour. bookable: false means "enquire only" -------
 export const services = [
   {
     id: 'portraits',
@@ -69,18 +81,33 @@ export const services = [
   },
 ]
 
+// ---- Hero slideshow: the photos that fade in the background ----------------
+// `position` is the CSS object-position, so you can move the crop (e.g. 'center 20%' to show more of the top).
+export const heroSlides = [
+  { id: 'hero-1', src: '/images/studio-1.avif', label: 'Studio', position: 'center 30%' },
+  { id: 'hero-2', src: '/images/wedding-photo.jpeg', label: 'Weddings', position: 'center 35%' },
+  { id: 'hero-3', src: '/images/portrait-photo.jpg', label: 'Portraits', position: 'center 25%' },
+  { id: 'hero-4', src: '/images/family-photo.jpg', label: 'Family', position: 'center 40%' },
+]
+
+// Small facts shown at the bottom of the hero (the "from £x/hour" fact is worked out from the services).
+export const heroFacts = ['Studio & on location', 'Replies within two working days']
+
+// ---- About ------------------------------------------------------------------
 export const aboutPoints = [
   { title: 'Natural light', text: 'Soft, flattering daylight wherever we can find it.' },
   { title: 'Honest moments', text: 'Gentle direction, so expressions stay real and never staged.' },
   { title: 'Timeless edit', text: 'Refined, true-to-life colour that still looks right in twenty years.' },
 ]
 
+// ---- How booking works (shown under the services) -----------------------------
 export const processSteps = [
   { title: 'Enquire', text: 'Tell us what you have in mind and your preferred date.', meta: 'Reply within two working days' },
   { title: 'Plan', text: 'We talk through the look, the location and the timing, so the day feels easy.', meta: 'Look, location, timing' },
   { title: 'Shoot & deliver', text: 'Relax in front of the camera. Your edited gallery follows, ready to share and print.', meta: 'Gallery in two to three weeks' },
 ]
 
+// ---- FAQ (shown next to the contact form, where people have questions) ----------
 export const faqs = [
   { question: 'How far in advance should I book?', answer: 'Weddings book up early, so get in touch as soon as you have a date. Portrait and family sessions can often be arranged within a few weeks.' },
   { question: 'Do you shoot on location?', answer: 'Yes. We photograph in the studio and on location. Travel beyond the local area is quoted individually.' },
@@ -90,3 +117,13 @@ export const faqs = [
 ]
 
 export const shootTypes = ['Portrait', 'Wedding', 'Family session', 'Something else']
+
+// ---- Contact details, used by the contact section and the footer -----------------
+export const contactInfo = {
+  email: 'hello@lenstheory.co.uk',
+  replyTime: 'Within two working days',
+  sessions: 'Studio and on location',
+}
+
+// Photo shown softly behind the contact section.
+export const contactPhoto = { src: '/images/family-photo.jpg', position: 'center 40%' }

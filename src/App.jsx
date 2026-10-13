@@ -4,23 +4,23 @@ import About from './components/About'
 import BasketButton from './components/BasketButton'
 import BasketDrawer from './components/BasketDrawer'
 import Contact from './components/Contact'
-import Faq from './components/Faq'
 import Footer from './components/Footer'
 import Gallery from './components/Gallery'
 import Header from './components/Header'
 import Hero from './components/Hero'
-import Process from './components/Process'
 import Services from './components/Services'
-import SpecialismsBand from './components/SpecialismsBand'
 import TermsModal from './components/TermsModal'
 
 export default function App() {
-  const [basket, setBasket] = useState([]) 
+  // ---- State that more than one component needs lives here, in the parent ----
+  const [basket, setBasket] = useState([]) // [{ id: 'portraits', hours: 2 }, ...]
   const [isBasketOpen, setIsBasketOpen] = useState(false)
-  const [termsService, setTermsService] = useState(null) 
+  const [termsService, setTermsService] = useState(null) // the service whose terms are open, or null
   const [shootType, setShootType] = useState('') // the contact form's "Type of shoot" select
 
   const basketCount = basket.reduce((total, line) => total + line.hours, 0)
+
+  // State is never changed directly. We give React a NEW array and it re-renders.
   function addToBasket(service, hours) {
     setBasket((current) => {
       const existing = current.find((line) => line.id === service.id)
@@ -44,20 +44,15 @@ export default function App() {
   return (
     <>
       <Header basketCount={basketCount} onOpenBasket={() => setIsBasketOpen(true)} />
+
       <main>
         <Hero />
-        <SpecialismsBand />
         <Gallery />
         <About />
-        <Services
-          onAddToBasket={addToBasket}
-          onShowTerms={setTermsService}
-          onEnquire={setShootType}
-        />
-        <Process />
-        <Faq />
+        <Services onAddToBasket={addToBasket} onShowTerms={setTermsService} onEnquire={setShootType} />
         <Contact shootType={shootType} onShootTypeChange={setShootType} />
       </main>
+
       <Footer />
 
       {/* Floating basket button, so the basket is reachable after scrolling */}

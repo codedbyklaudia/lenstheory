@@ -1,7 +1,9 @@
 import { useEffect } from 'react'
 import Button from './Button'
 
+// Shows the terms of one service. App decides which service (or none) is shown.
 export default function TermsModal({ service, onClose }) {
+  // Same idea as the basket drawer: Escape closes it and the page behind can't scroll.
   useEffect(() => {
     function handleKeyDown(event) {
       if (event.key === 'Escape') onClose()
@@ -23,7 +25,7 @@ export default function TermsModal({ service, onClose }) {
         role="dialog"
         aria-modal="true"
         aria-labelledby="terms-title"
-        className="relative flex max-h-[85vh] w-full max-w-2xl animate-fade-up flex-col overflow-hidden rounded-2xl bg-cream shadow-2xl motion-reduce:animate-none"
+        className="relative flex max-h-[85vh] w-full max-w-2xl animate-fade-in flex-col overflow-hidden rounded-2xl bg-cream shadow-2xl motion-reduce:animate-none"
       >
         <div className="flex items-center justify-between gap-4 border-b border-line p-5 sm:p-6">
           <h2 id="terms-title" className="font-display text-xl sm:text-2xl">
