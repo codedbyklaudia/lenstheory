@@ -1,0 +1,74 @@
+@import "tailwindcss";
+
+/* Design tokens. Each --color-* becomes utilities like bg-cream, text-ink, border-line.
+   Each --font-* becomes font-display / font-body. */
+@theme {
+  --color-cream: #f8f3eb;
+  --color-ink: #1a1512;
+  --color-ink-soft: #52483f;
+  --color-ember: #7f5f3a;
+  --color-gold: #e3c9a0;
+  --color-clay: #ecdcc8;
+  --color-tint: #f3ebdf;
+  --color-line: #e8dccd;
+
+  --font-display: "Fraunces", Georgia, "Times New Roman", serif;
+  --font-body: "DM Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  --animate-hero-zoom: hero-zoom 18s ease-out both;
+  --animate-fade-up: fade-up 0.9s ease-out both;
+  --animate-slide-in: slide-in 0.3s ease-out both;
+  --animate-menu-in: menu-in 0.2s ease-out both;
+
+  @keyframes hero-zoom {
+    from { transform: scale(1.1); }
+    to   { transform: scale(1); }
+  }
+
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(1.5rem); }
+    to   { opacity: 1; transform: none; }
+  }
+
+  @keyframes slide-in {
+    from { transform: translateX(100%); }
+    to   { transform: none; }
+  }
+
+  @keyframes menu-in {
+    from { opacity: 0; transform: translateY(-0.5rem); }
+    to   { opacity: 1; transform: none; }
+  }
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    /* keeps anchor targets from hiding under the fixed header */
+    scroll-padding-top: 4.5rem;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+  }
+
+  body {
+    font-family: var(--font-body);
+    background-color: var(--color-cream);
+    color: var(--color-ink);
+    line-height: 1.6;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-ember);
+    outline-offset: 3px;
+  }
+}
