@@ -8,6 +8,6 @@ import { createAuthClient } from 'better-auth/react'
 
 export const authClient = createAuthClient({
   // Same address as the website itself: /api is forwarded to the Express server
-  // (by Vite's proxy locally, and by vercel.json once deployed).
+  // (by Vite's proxy locally, and by the root vercel.json once deployed).
   baseURL: window.location.origin,
 })

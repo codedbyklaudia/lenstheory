@@ -21,5 +21,14 @@ export const auth = betterAuth({
 
   // BETTER_AUTH_SECRET (used to sign cookies) and BETTER_AUTH_URL are read from .env automatically.
   // Only requests coming from these websites may log in (protects against other sites faking requests).
-  trustedOrigins: (process.env.CLIENT_ORIGIN ?? 'http://localhost:5173').split(','),
+  trustedOrigins: [...(process.env.CLIENT_ORIGIN ?? 'http://localhost:5173').split(','), ...vercelOrigins()],
 })
+
+// On Vercel, the site and the API share one domain. Vercel tells us that domain in these
+// variables (production, branch preview and this exact deployment), so we trust them too.
+// Locally none of them exist and this returns an empty list.
+function vercelOrigins() {
+  return [process.env.VERCEL_PROJECT_PRODUCTION_URL, process.env.VERCEL_BRANCH_URL, process.env.VERCEL_URL]
+    .filter(Boolean)
+    .map((host) => `https://${host}`)
+}

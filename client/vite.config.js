@@ -7,7 +7,7 @@ export default defineConfig({
   server: {
     // In development, forward every /api request to the Express server.
     // The browser only ever talks to localhost:5173, so the login cookie is a normal
-    // same-site cookie. In production, vercel.json does the same job.
+    // same-site cookie. In production, the root vercel.json does the same job.
     proxy: {
       '/api': 'http://localhost:3000',
     },
