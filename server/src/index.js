@@ -6,12 +6,14 @@
 //   /api/photos      GET  the gallery photos
 //   /api/bookings    GET  my booking requests, POST a new one (must be signed in)
 //   /api/enquiries   POST a contact-form message (anyone)
+//   /api/admin/*     the admin dashboard's data and actions (admins only)
 //   /api/health      GET  quick "is the server up?" check
 
 import 'dotenv/config'
 import express from 'express'
 import { toNodeHandler } from 'better-auth/node'
 import { auth } from './auth.js'
+import adminRouter from './routes/admin.js'
 import bookingsRouter from './routes/bookings.js'
 import enquiriesRouter from './routes/enquiries.js'
 import photosRouter from './routes/photos.js'
@@ -34,6 +36,7 @@ app.use('/api/services', servicesRouter)
 app.use('/api/photos', photosRouter)
 app.use('/api/bookings', bookingsRouter)
 app.use('/api/enquiries', enquiriesRouter)
+app.use('/api/admin', adminRouter)
 
 // Any other /api URL: a JSON 404 instead of Express's default HTML page.
 app.use('/api', (req, res) => res.status(404).json({ error: 'Not found' }))

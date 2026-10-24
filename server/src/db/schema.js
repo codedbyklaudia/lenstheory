@@ -109,6 +109,7 @@ export const enquiries = pgTable('enquiries', {
   timeOfDay: text('time_of_day').notNull(),
   message: text('message').notNull(),
   userId: text('user_id').references(() => user.id, { onDelete: 'set null' }),
+  status: text('status').notNull().default('new'), // 'new' or 'replied' (set by an admin)
   createdAt: timestamp('created_at').notNull().defaultNow(),
 })
 
@@ -124,5 +125,6 @@ export const bookings = pgTable('bookings', {
     .references(() => services.id),
   hours: integer('hours').notNull(),
   pricePerHour: integer('price_per_hour').notNull(), // price at the time of booking
+  status: text('status').notNull().default('requested'), // 'requested', 'confirmed' or 'cancelled'
   createdAt: timestamp('created_at').notNull().defaultNow(),
 })

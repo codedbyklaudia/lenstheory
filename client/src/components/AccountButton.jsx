@@ -22,6 +22,14 @@ function Icon({ name, className = 'size-4' }) {
         <path d="M3 10h18M8 3v4M16 3v4" />
       </>
     ),
+    dashboard: (
+      <>
+        <rect x="3" y="3" width="7" height="9" rx="1.5" />
+        <rect x="14" y="3" width="7" height="5" rx="1.5" />
+        <rect x="14" y="12" width="7" height="9" rx="1.5" />
+        <rect x="3" y="16" width="7" height="5" rx="1.5" />
+      </>
+    ),
     chevron: <path d="m6 9 6 6 6-6" />,
     arrow: <path d="M5 12h14m-6-6 6 6-6 6" />,
   }
@@ -68,7 +76,8 @@ function Avatar({ user, className = 'size-8 text-sm' }) {
 // Same shape and height as "Book a Session", but outlined, so the two read as a pair
 // without competing. `isSolid` tells us whether the header is over the photo (light text)
 // or on cream (dark text).
-export default function AccountButton({ user, isSolid, onSignIn, onSignOut }) {
+// `isAdmin` adds an "Admin dashboard" link to the account card.
+export default function AccountButton({ user, isAdmin, isSolid, onSignIn, onSignOut }) {
   const [isOpen, setIsOpen] = useState(false)
   const wrapperRef = useRef(null)
 
@@ -148,6 +157,15 @@ export default function AccountButton({ user, isSolid, onSignIn, onSignOut }) {
           </div>
 
           <div className="flex flex-col p-2">
+            {isAdmin && (
+              <a
+                href="/admin"
+                className="flex items-center gap-3 rounded-xl px-3 py-2.5 font-medium transition hover:bg-tint"
+              >
+                <Icon name="dashboard" className="size-4.5 text-ember" />
+                Admin dashboard
+              </a>
+            )}
             <a
               href="#contact"
               onClick={() => setIsOpen(false)}
@@ -164,7 +182,10 @@ export default function AccountButton({ user, isSolid, onSignIn, onSignOut }) {
               }}
               className="group/out flex items-center gap-3 rounded-xl px-3 py-2.5 text-left transition hover:bg-ember hover:text-cream"
             >
-              <Icon name="logout" className="size-4.5 text-ember transition group-hover/out:translate-x-0.5 group-hover/out:text-cream" />
+              <Icon
+                name="logout"
+                className="size-4.5 text-ember transition group-hover/out:translate-x-0.5 group-hover/out:text-cream"
+              />
               Sign out
             </button>
           </div>
@@ -176,7 +197,7 @@ export default function AccountButton({ user, isSolid, onSignIn, onSignOut }) {
 
 // ---- Mobile: the account block inside the hamburger menu ----------------------
 // `onDone` closes the menu before signing in/out.
-export function MobileAccount({ user, onSignIn, onSignOut, onDone }) {
+export function MobileAccount({ user, isAdmin, onSignIn, onSignOut, onDone }) {
   if (!user) {
     return (
       <button
@@ -197,23 +218,34 @@ export function MobileAccount({ user, onSignIn, onSignOut, onDone }) {
   }
 
   return (
-    <div className="flex items-center gap-3 rounded-2xl bg-tint p-3">
-      <Avatar user={user} className="size-11 text-base" />
-      <div className="min-w-0 flex-1">
-        <p className="truncate font-display text-lg leading-tight">{user.name}</p>
-        <p className="truncate text-sm text-ink-soft">{user.email}</p>
+    <div className="flex flex-col gap-2">
+      <div className="flex items-center gap-3 rounded-2xl bg-tint p-3">
+        <Avatar user={user} className="size-11 text-base" />
+        <div className="min-w-0 flex-1">
+          <p className="truncate font-display text-lg leading-tight">{user.name}</p>
+          <p className="truncate text-sm text-ink-soft">{user.email}</p>
+        </div>
+        <button
+          type="button"
+          onClick={() => {
+            onDone()
+            onSignOut()
+          }}
+          aria-label="Sign out"
+          className="flex size-11 shrink-0 items-center justify-center rounded-full border border-ink/15 text-ember transition hover:border-ember hover:bg-ember hover:text-cream"
+        >
+          <Icon name="logout" className="size-5" />
+        </button>
       </div>
-      <button
-        type="button"
-        onClick={() => {
-          onDone()
-          onSignOut()
-        }}
-        aria-label="Sign out"
-        className="flex size-11 shrink-0 items-center justify-center rounded-full border border-ink/15 text-ember transition hover:border-ember hover:bg-ember hover:text-cream"
-      >
-        <Icon name="logout" className="size-5" />
-      </button>
+      {isAdmin && (
+        <a
+          href="/admin"
+          className="flex items-center gap-3 rounded-2xl border border-ink/15 px-4 py-3 font-medium transition hover:border-ink"
+        >
+          <Icon name="dashboard" className="size-5 text-ember" />
+          Admin dashboard
+        </a>
+      )}
     </div>
   )
 }

@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { MAX_HOURS, photoTalk, specialisms } from './data/studioData'
-import { useApi } from './lib/api'
+import { apiFetch, useApi } from './lib/api'
 import { authClient } from './lib/authClient'
 import About from './components/About'
+import AdminDashboard from './components/AdminDashboard'
 import AuthModal from './components/AuthModal'
 import BasketButton from './components/BasketButton'
 import BasketDrawer from './components/BasketDrawer'
@@ -15,6 +16,10 @@ import MarqueeBand from './components/MarqueeBand'
 import Services from './components/Services'
 import TermsModal from './components/TermsModal'
 
+// Which page to show. The site is one page, except /admin which shows the dashboard instead.
+// (No router library needed: we just look at the address once when the app starts.)
+const isAdminPage = window.location.pathname.startsWith('/admin')
+
 export default function App() {
   // ---- Data from the API ----
   // Services are used by the service cards and the basket, so App fetches them once.
@@ -24,9 +29,22 @@ export default function App() {
   // ---- Who is signed in? ----
   // useSession() asks the server on page load (so a refresh keeps you signed in, thanks to the
   // session cookie) and updates automatically after signing in or out.
-  const { data: session } = authClient.useSession()
+  const { data: session, isPending: isSessionPending } = authClient.useSession()
   const user = session?.user ?? null
   const [isAuthOpen, setIsAuthOpen] = useState(false)
+
+  // ---- Is the signed-in user an admin? (decides whether to show the "Admin dashboard" link) ----
+  // Only the server knows the admin list, so we ask it whenever the user changes.
+  const [isAdmin, setIsAdmin] = useState(false)
+  useEffect(() => {
+    if (!user) {
+      setIsAdmin(false)
+      return
+    }
+    apiFetch('/api/admin/check')
+      .then((result) => setIsAdmin(result.isAdmin))
+      .catch(() => setIsAdmin(false))
+  }, [user?.id])
 
   // ---- State that more than one component needs lives here, in the parent ----
   const [basket, setBasket] = useState([]) // [{ id: 'portraits', hours: 2 }, ...]
@@ -57,12 +75,27 @@ export default function App() {
     setBasket((current) => current.filter((line) => line.id !== id))
   }
 
+  if (isAdminPage) {
+    return (
+      <>
+        <AdminDashboard
+          user={user}
+          isSessionPending={isSessionPending}
+          onSignIn={() => setIsAuthOpen(true)}
+          onSignOut={() => authClient.signOut()}
+        />
+        {isAuthOpen && <AuthModal onClose={() => setIsAuthOpen(false)} />}
+      </>
+    )
+  }
+
   return (
     <>
       <Header
         basketCount={basketCount}
         onOpenBasket={() => setIsBasketOpen(true)}
         user={user}
+        isAdmin={isAdmin}
         onSignIn={() => setIsAuthOpen(true)}
         onSignOut={() => authClient.signOut()}
       />

@@ -6,7 +6,7 @@ import Button from './Button'
 import LensMark from './LensMark'
 
 // `user` is the signed-in user from Better Auth, or null when signed out.
-export default function Header({ basketCount, onOpenBasket, user, onSignIn, onSignOut }) {
+export default function Header({ basketCount, onOpenBasket, user, isAdmin, onSignIn, onSignOut }) {
   // STATE 1: has the visitor scrolled down? Starts false (page is at the top).
   const [isScrolled, setIsScrolled] = useState(false)
   // STATE 2: is the mobile menu open?
@@ -91,7 +91,7 @@ export default function Header({ basketCount, onOpenBasket, user, onSignIn, onSi
 
         <div className="flex items-center gap-1 sm:gap-3 lg:justify-self-end">
           {/* "Sign in" pill, or the signed-in user's chip with an account menu (desktop; mobile is in the menu) */}
-          <AccountButton user={user} isSolid={isSolid} onSignIn={onSignIn} onSignOut={onSignOut} />
+          <AccountButton user={user} isAdmin={isAdmin} isSolid={isSolid} onSignIn={onSignIn} onSignOut={onSignOut} />
 
           {/* Guests get the big "Book a Session" button. Signed-in users already have it in their account menu. */}
           {!user && (
@@ -169,7 +169,7 @@ export default function Header({ basketCount, onOpenBasket, user, onSignIn, onSi
               </li>
             ))}
             <li className="pt-5">
-              <MobileAccount user={user} onSignIn={onSignIn} onSignOut={onSignOut} onDone={closeMenu} />
+              <MobileAccount user={user} isAdmin={isAdmin} onSignIn={onSignIn} onSignOut={onSignOut} onDone={closeMenu} />
             </li>
             <li className="pb-5 pt-3">
               <Button href="#contact" onClick={closeMenu} className="w-full">

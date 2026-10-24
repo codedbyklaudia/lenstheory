@@ -26,12 +26,14 @@ LensTheory/
     │   ├── index.js         creates the Express app and plugs in every route
     │   ├── auth.js          Better Auth config (email + password, 7-day sessions)
     │   ├── middleware/
-    │   │   └── requireAuth.js   blocks a route unless the request has a valid session
+    │   │   ├── requireAuth.js   blocks a route unless the request has a valid session
+    │   │   └── requireAdmin.js  blocks a route unless that user's email is in ADMIN_EMAILS
     │   ├── routes/
     │   │   ├── services.js  GET /api/services
     │   │   ├── photos.js    GET /api/photos
     │   │   ├── bookings.js  GET + POST /api/bookings (signed-in users only)
-    │   │   └── enquiries.js POST /api/enquiries (contact form, anyone)
+    │   │   ├── enquiries.js POST /api/enquiries (contact form, anyone)
+    │   │   └── admin.js     /api/admin/* dashboard data + status changes (admins only)
     │   └── db/
     │       ├── schema.js    every table, defined with Drizzle ORM
     │       ├── index.js     the database connection
@@ -63,13 +65,23 @@ Browser ──> one Vercel domain
 | `verification` | a short-lived code (reserved for email verification / password reset) | |
 | `services` | a session type the studio sells | name, price per hour, bookable?, features, terms |
 | `gallery_photos` | a photo in the gallery | image path, alt text, category, shape |
-| `bookings` | a booking request from a signed-in user | which user, which service, hours, price at the time |
-| `enquiries` | a message sent through the contact form | name, email, shoot type, preferred date, message, user (if signed in) |
+| `bookings` | a booking request from a signed-in user | which user, which service, hours, price at the time, status (requested / confirmed / cancelled) |
+| `enquiries` | a message sent through the contact form | name, email, shoot type, preferred date, message, user (if signed in), status (new / replied) |
 
 Relationships: a user has many sessions, accounts and bookings (`user_id` foreign keys; deleting a
 user deletes them too). Each booking points to one service (`service_id`). An enquiry *may* point to
 a user: guests can send one too, so `user_id` is optional (and set to null if that user is deleted).
 The first four tables are managed by Better Auth; the last four are ours.
+
+## Admin dashboard
+
+`/admin` shows the studio's dashboard: totals, every enquiry, booking and user. Admins can mark
+enquiries as replied and confirm or cancel bookings.
+
+Who is an admin is decided **on the server**, by the `ADMIN_EMAILS` variable (comma-separated emails).
+Every `/api/admin/*` route runs `requireAuth` then `requireAdmin`, so a non-admin gets `403 Admins only`
+even if they type the address in by hand. The "Admin dashboard" link in the account menu is only a
+shortcut: it appears when `GET /api/admin/check` says the signed-in user is an admin.
 
 ## Running it locally
 
@@ -108,6 +120,7 @@ full path (`/api/services`), which matches its routes.
    - `DATABASE_URL`: the Neon connection string
    - `BETTER_AUTH_SECRET`: a long random string
    - `BETTER_AUTH_URL`: the production URL, e.g. `https://lenstheory.vercel.app`
+   - `ADMIN_EMAILS`: the email(s) allowed into `/admin`
 3. Deploy. Check `https://<your-domain>/api/services` shows JSON, then sign up on the live site.
 
 Vercel's own domains (production, preview and the deployment URL) are trusted for login automatically
