@@ -3,6 +3,7 @@ import { MAX_HOURS } from './data/studioData'
 import { apiFetch, useApi } from './lib/api'
 import { authClient } from './lib/authClient'
 import About from './components/About'
+import AccountPage from './components/AccountPage'
 import AdminDashboard from './components/AdminDashboard'
 import AuthModal from './components/AuthModal'
 import BasketButton from './components/BasketButton'
@@ -14,12 +15,30 @@ import Header from './components/Header'
 import Hero from './components/Hero'
 import LensMark from './components/LensMark'
 import MarqueeBand from './components/MarqueeBand'
+import OrderSuccess from './components/OrderSuccess'
 import Services from './components/Services'
 import TermsModal from './components/TermsModal'
 
-// Which page to show. The site is one page, except /admin which shows the dashboard instead.
-// (No router library needed: we just look at the address once when the app starts.)
+// Which page to show. The site is one page, except /admin (the studio's dashboard), /account
+// (a customer's own orders and details) and /order/success (where Stripe sends customers after paying). No router library needed: we just look at the
+// address once when the app starts.
 const isAdminPage = window.location.pathname.startsWith('/admin')
+const isOrderPage = window.location.pathname.startsWith('/order/success')
+const isAccountPage = window.location.pathname.startsWith('/account')
+// Stripe's "back" link (cancel_url in server/src/routes/checkout.js) adds ?checkout=cancelled.
+const cameBackFromCheckout = new URLSearchParams(window.location.search).get('checkout') === 'cancelled'
+
+// The basket is also saved in the browser (localStorage), because paying means leaving our site
+// for Stripe's page: without this, coming back would show an empty basket.
+// try/catch: some browsers (e.g. private mode) block localStorage; then the basket just isn't saved.
+const BASKET_KEY = 'lens-theory-basket'
+function loadBasket() {
+  try {
+    return JSON.parse(localStorage.getItem(BASKET_KEY)) ?? []
+  } catch {
+    return []
+  }
+}
 
 export default function App() {
   // ---- Data from the API ----
@@ -53,12 +72,21 @@ export default function App() {
   }, [user?.id])
 
   // ---- State that more than one component needs lives here, in the parent ----
-  const [basket, setBasket] = useState([]) // [{ id: 'portraits', hours: 2 }, ...]
-  const [isBasketOpen, setIsBasketOpen] = useState(false)
+  const [basket, setBasket] = useState(loadBasket) // [{ id: 'portraits', hours: 2 }, ...]
+  const [isBasketOpen, setIsBasketOpen] = useState(cameBackFromCheckout) // reopen it after a cancelled payment
   const [termsService, setTermsService] = useState(null) // the service whose terms are open, or null
   const [shootType, setShootType] = useState('') // the contact form's "Type of shoot" select
 
   const basketCount = basket.reduce((total, line) => total + line.hours, 0)
+
+  // EFFECT: save the basket in the browser every time it changes.
+  useEffect(() => {
+    try {
+      localStorage.setItem(BASKET_KEY, JSON.stringify(basket))
+    } catch {
+      // Storage blocked: nothing to do, the basket still works until the page is closed.
+    }
+  }, [basket])
 
   // State is never changed directly. We give React a NEW array and it re-renders.
   function addToBasket(service, hours) {
@@ -79,6 +107,35 @@ export default function App() {
 
   function removeLine(id) {
     setBasket((current) => current.filter((line) => line.id !== id))
+  }
+
+  if (isOrderPage) {
+    return (
+      <>
+        <OrderSuccess
+          user={user}
+          isSessionPending={isSessionPending}
+          onSignIn={() => setIsAuthOpen(true)}
+          onPaid={() => setBasket([])}
+        />
+        {isAuthOpen && <AuthModal onClose={() => setIsAuthOpen(false)} />}
+      </>
+    )
+  }
+
+  if (isAccountPage) {
+    return (
+      <>
+        <AccountPage
+          user={user}
+          isSessionPending={isSessionPending}
+          isAdmin={isAdmin}
+          onSignIn={() => setIsAuthOpen(true)}
+          onSignOut={() => authClient.signOut()}
+        />
+        {isAuthOpen && <AuthModal onClose={() => setIsAuthOpen(false)} />}
+      </>
+    )
   }
 
   if (isAdminPage) {

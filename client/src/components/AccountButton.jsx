@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
+import { accountTabs } from './AccountPage'
+import { adminTabs } from './AdminDashboard'
 
 // Line icons used by the account buttons.
 function Icon({ name, className = 'size-4' }) {
@@ -16,10 +18,23 @@ function Icon({ name, className = 'size-4' }) {
         <path d="M21 12H9" />
       </>
     ),
+    bag: (
+      <>
+        <path d="M5 8h14l-1 12H6L5 8z" />
+        <path d="M9 8V6a3 3 0 0 1 6 0v2" />
+      </>
+    ),
     calendar: (
       <>
         <rect x="3" y="5" width="18" height="16" rx="2" />
         <path d="M3 10h18M8 3v4M16 3v4" />
+      </>
+    ),
+    image: (
+      <>
+        <rect x="3" y="4" width="18" height="16" rx="2" />
+        <circle cx="9" cy="10" r="2" />
+        <path d="m21 16-5-5-9 9" />
       </>
     ),
     dashboard: (
@@ -51,6 +66,14 @@ function Icon({ name, className = 'size-4' }) {
   )
 }
 
+// Every tab of the account page (/account) and, for admins, of the dashboard (/admin), as links.
+// The pages read ?tab= from the address, so each link opens straight on its tab.
+// The lists come from the pages themselves, so a new tab shows up here automatically.
+const accountLinks = accountTabs.map((tab) => ({ ...tab, href: `/account?tab=${tab.id}` }))
+const studioLinks = adminTabs.map((tab) => ({ ...tab, href: `/admin?tab=${tab.id}` }))
+
+const menuHeading = 'px-3 pb-1 pt-2 text-xs font-medium uppercase tracking-[0.15em] text-ink-soft'
+
 // "Klaudia Smith" -> "KS", "sam" -> "S"
 const initialsOf = (name) =>
   name
@@ -76,7 +99,8 @@ function Avatar({ user, className = 'size-8 text-sm' }) {
 // Same shape and height as "Book a Session", but outlined, so the two read as a pair
 // without competing. `isSolid` tells us whether the header is over the photo (light text)
 // or on cream (dark text).
-// `isAdmin` adds an "Admin dashboard" link to the account card.
+// The account card lists every tab of "My account" (for everyone), and for admins a second
+// column, "Studio", with every tab of the admin dashboard.
 export default function AccountButton({ user, isAdmin, isSolid, onSignIn, onSignOut }) {
   const [isOpen, setIsOpen] = useState(false)
   const wrapperRef = useRef(null)
@@ -145,7 +169,9 @@ export default function AccountButton({ user, isAdmin, isSolid, onSignIn, onSign
       {isOpen && (
         <div
           id="account-menu"
-          className="absolute right-0 top-[calc(100%+0.75rem)] w-72 origin-top-right animate-menu-in overflow-hidden rounded-2xl border border-line bg-cream text-ink shadow-2xl motion-reduce:animate-none"
+          className={`absolute right-0 top-[calc(100%+0.75rem)] max-h-[calc(100svh-7rem)] origin-top-right animate-menu-in overflow-y-auto rounded-2xl border border-line bg-cream text-ink shadow-2xl motion-reduce:animate-none ${
+            isAdmin ? 'w-[32rem]' : 'w-72'
+          }`}
         >
           {/* Who is signed in */}
           <div className="flex items-center gap-3 bg-tint p-4">
@@ -156,16 +182,33 @@ export default function AccountButton({ user, isAdmin, isSolid, onSignIn, onSign
             </div>
           </div>
 
-          <div className="flex flex-col p-2">
+          <div className={`grid p-2 ${isAdmin ? 'grid-cols-2 gap-2' : ''}`}>
+            <nav aria-label="My account" className="flex flex-col">
+              <p className={menuHeading}>My account</p>
+              {accountLinks.map((link) => (
+                <a key={link.href} href={link.href} className="flex items-center gap-3 rounded-xl px-3 py-2.5 transition hover:bg-tint">
+                  <Icon name={link.icon} className="size-4.5 text-ember" />
+                  {link.label}
+                </a>
+              ))}
+            </nav>
+
             {isAdmin && (
-              <a
-                href="/admin"
-                className="flex items-center gap-3 rounded-xl px-3 py-2.5 font-medium transition hover:bg-tint"
-              >
-                <Icon name="dashboard" className="size-4.5 text-ember" />
-                Admin dashboard
-              </a>
+              <nav aria-label="Studio dashboard" className="flex flex-col border-l border-line pl-2">
+                <p className={`${menuHeading} flex items-center gap-2`}>
+                  <Icon name="dashboard" className="size-3.5 text-ember" />
+                  Studio
+                </p>
+                {studioLinks.map((link) => (
+                  <a key={link.href} href={link.href} className="rounded-xl px-3 py-1.5 text-sm transition hover:bg-tint">
+                    {link.label}
+                  </a>
+                ))}
+              </nav>
             )}
+          </div>
+
+          <div className="flex flex-col border-t border-line p-2">
             <a
               href="#contact"
               onClick={() => setIsOpen(false)}
@@ -237,14 +280,33 @@ export function MobileAccount({ user, isAdmin, onSignIn, onSignOut, onDone }) {
           <Icon name="logout" className="size-5" />
         </button>
       </div>
+      {/* Two columns of tiles, so all four tabs fit without a long scroll */}
+      <div className="grid grid-cols-2 gap-2">
+        {accountLinks.map((link) => (
+          <a
+            key={link.href}
+            href={link.href}
+            className="flex items-center gap-2.5 rounded-2xl border border-ink/15 px-3 py-3 text-sm font-medium transition hover:border-ink"
+          >
+            <Icon name={link.icon} className="size-5 shrink-0 text-ember" />
+            {link.label}
+          </a>
+        ))}
+      </div>
       {isAdmin && (
-        <a
-          href="/admin"
-          className="flex items-center gap-3 rounded-2xl border border-ink/15 px-4 py-3 font-medium transition hover:border-ink"
-        >
-          <Icon name="dashboard" className="size-5 text-ember" />
-          Admin dashboard
-        </a>
+        <div className="rounded-2xl border border-ink/15 p-3">
+          <p className="mb-2 flex items-center gap-2 text-xs font-medium uppercase tracking-[0.15em] text-ink-soft">
+            <Icon name="dashboard" className="size-4 text-ember" />
+            Studio
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {studioLinks.map((link) => (
+              <a key={link.href} href={link.href} className="rounded-full bg-tint px-3 py-1.5 text-sm transition hover:bg-ink hover:text-cream">
+                {link.label}
+              </a>
+            ))}
+          </div>
+        </div>
       )}
     </div>
   )

@@ -4,7 +4,11 @@
     "client": {
       "root": "client",
       "framework": "vite",
-      "rewrites": [{ "source": "/admin", "destination": "/index.html" }]
+      "rewrites": [
+        { "source": "/admin", "destination": "/index.html" },
+        { "source": "/account", "destination": "/index.html" },
+        { "source": "/order/(.*)", "destination": "/index.html" }
+      ]
     },
     "server": {
       "root": "server",

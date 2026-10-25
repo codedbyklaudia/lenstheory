@@ -113,6 +113,70 @@ export const enquiries = pgTable('enquiries', {
   createdAt: timestamp('created_at').notNull().defaultNow(),
 })
 
+// ---- Payments (Stripe) ---------------------------------------------------------
+
+// One row per purchase: a signed-in user paying for their basket.
+// It is created as 'pending' when checkout starts. ONLY the Stripe webhook (routes/stripe.js)
+// changes it to 'paid', once Stripe tells us the money really arrived.
+export const orders = pgTable('orders', {
+  id: serial('id').primaryKey(),
+  userId: text('user_id')
+    .notNull()
+    .references(() => user.id, { onDelete: 'cascade' }),
+  status: text('status').notNull().default('pending'), // 'pending', 'paid' or 'expired'
+  total: integer('total').notNull(), // whole pounds, added up on the server from database prices
+  stripeSessionId: text('stripe_session_id').unique(), // links the order to its Stripe Checkout Session
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  paidAt: timestamp('paid_at'), // set by the webhook; null until paid
+})
+
+// One row per line of an order: which service, how many hours, and the price at that moment.
+// The name and price are COPIED here, so the order still shows what was paid even if an admin
+// renames the service or changes its price later.
+export const orderItems = pgTable('order_items', {
+  id: serial('id').primaryKey(),
+  orderId: integer('order_id')
+    .notNull()
+    .references(() => orders.id, { onDelete: 'cascade' }),
+  serviceId: text('service_id')
+    .notNull()
+    .references(() => services.id),
+  serviceName: text('service_name').notNull(),
+  hours: integer('hours').notNull(),
+  pricePerHour: integer('price_per_hour').notNull(), // whole pounds
+})
+
+// ---- Photo sessions and delivered photos ---------------------------------------
+// (Called "shoots" in the code, because Better Auth already has a table called `session`.)
+
+// One row per photo session a customer has: created automatically for every line of a paid order
+// (by the Stripe webhook), or by an admin for sessions agreed some other way (e.g. a wedding enquiry).
+// The admin then sets the date and place, and finally delivers the photos.
+export const shoots = pgTable('shoots', {
+  id: serial('id').primaryKey(),
+  userId: text('user_id')
+    .notNull()
+    .references(() => user.id, { onDelete: 'cascade' }),
+  orderId: integer('order_id').references(() => orders.id, { onDelete: 'set null' }), // null if added by hand
+  serviceName: text('service_name').notNull(), // e.g. 'Portraits (2 hours)'
+  status: text('status').notNull().default('unscheduled'), // 'unscheduled' -> 'scheduled' -> 'delivered'
+  scheduledAt: timestamp('scheduled_at'), // date and time of the shoot, once agreed
+  location: text('location'),
+  notes: text('notes'), // a message the customer sees, e.g. what to bring
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+})
+
+// One row per finished photo the studio uploads for a shoot. The customer only sees them
+// in "My gallery" once the shoot's status is 'delivered' (the server checks this).
+export const clientPhotos = pgTable('client_photos', {
+  id: serial('id').primaryKey(),
+  shootId: integer('shoot_id')
+    .notNull()
+    .references(() => shoots.id, { onDelete: 'cascade' }),
+  src: text('src').notNull(), // public URL from Vercel Blob (see routes/uploads.js)
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+})
+
 // One row per email reply an admin sent to an enquiry from the dashboard.
 // Deleting the enquiry deletes its replies too.
 export const enquiryReplies = pgTable('enquiry_replies', {

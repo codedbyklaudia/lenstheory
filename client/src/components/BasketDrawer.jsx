@@ -7,10 +7,9 @@ const formatPrice = (value) => `£${value}`
 
 // The basket itself lives in App. This component only DISPLAYS it and reports what the user did
 // (change hours, remove, clear, close) by calling the functions App passed in.
-// `user` is the signed-in user, or null. Booking needs an account, so guests are asked to sign in.
+// `user` is the signed-in user, or null. Paying needs an account, so guests are asked to sign in.
 export default function BasketDrawer({ basket, services, user, onSignIn, onChangeHours, onRemove, onClear, onClose }) {
-  // 'idle' -> 'sending' -> 'sent' (or back to 'idle' with an error message)
-  const [status, setStatus] = useState('idle')
+  const [isPaying, setIsPaying] = useState(false)
   const [error, setError] = useState('')
 
   // Join each basket line ({ id, hours }) with its service data (name, price, image).
@@ -19,19 +18,20 @@ export default function BasketDrawer({ basket, services, user, onSignIn, onChang
     .filter((line) => line.service)
   const total = lines.reduce((sum, line) => sum + line.service.pricePerHour * line.hours, 0)
 
-  // POST the basket to the API. The server checks we're signed in and saves it in the bookings table.
-  async function requestBooking() {
-    setStatus('sending')
+  // "Pay now": send the basket to POST /api/checkout. The server prices it from the database, saves a
+  // pending order and answers with the address of Stripe's payment page, which we then go to.
+  // We only send WHAT and HOW LONG; the prices shown here are just for display.
+  async function checkout() {
+    setIsPaying(true)
     setError('')
     try {
-      await apiFetch('/api/bookings', {
+      const { url } = await apiFetch('/api/checkout', {
         method: 'POST',
         body: JSON.stringify({ items: basket.map((line) => ({ serviceId: line.id, hours: line.hours })) }),
       })
-      setStatus('sent')
-      onClear()
+      window.location.href = url // leave our site for Stripe's hosted checkout page
     } catch (err) {
-      setStatus('idle')
+      setIsPaying(false)
       setError(err.message)
     }
   }
@@ -75,15 +75,7 @@ export default function BasketDrawer({ basket, services, user, onSignIn, onChang
         </div>
 
         <div className="flex-1 overflow-y-auto p-5 sm:p-6">
-          {status === 'sent' ? (
-            <div role="status" className="flex flex-col items-start gap-2 py-6">
-              <p className="font-display text-2xl">Booking request sent</p>
-              <p className="text-ink-soft">
-                Thank you{user ? `, ${user.name}` : ''}. We will be in touch within two working days to
-                confirm your date.
-              </p>
-            </div>
-          ) : lines.length === 0 ? (
+          {lines.length === 0 ? (
             <p className="py-6 text-ink-soft">
               Your basket is empty. Add a session from the services section.
             </p>
@@ -129,7 +121,8 @@ export default function BasketDrawer({ basket, services, user, onSignIn, onChang
               <strong className="font-display text-3xl font-medium">{formatPrice(total)}</strong>
             </div>
             <p className="text-sm text-ink-soft">
-              Sessions are priced per hour. Your date and details are confirmed after booking.
+              Sessions are priced per hour. You pay securely on Stripe's page, then we contact you to
+              arrange the date.
             </p>
             {error && (
               <p role="alert" className="text-sm text-ember">
@@ -137,12 +130,12 @@ export default function BasketDrawer({ basket, services, user, onSignIn, onChang
               </p>
             )}
             {user ? (
-              <Button onClick={requestBooking} disabled={status === 'sending'} className="w-full">
-                {status === 'sending' ? 'Sending…' : 'Request booking'}
+              <Button onClick={checkout} disabled={isPaying} className="w-full">
+                {isPaying ? 'Opening secure checkout…' : `Pay now · ${formatPrice(total)}`}
               </Button>
             ) : (
               <Button onClick={onSignIn} className="w-full">
-                Sign in to book
+                Sign in to pay
               </Button>
             )}
             <button

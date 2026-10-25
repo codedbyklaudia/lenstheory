@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import { asc, count, eq } from 'drizzle-orm'
 import { db } from '../db/index.js'
-import { bookings, services } from '../db/schema.js'
+import { bookings, orderItems, services } from '../db/schema.js'
 import { adminOnly } from '../middleware/requireAdmin.js'
 import { SHOOT_TYPES } from './enquiries.js'
 
@@ -102,16 +102,20 @@ router.put('/:id', adminOnly, async (req, res) => {
   res.json(updated)
 })
 
-// DELETE /api/services/:id -> removes a service, but only if nobody has booked it.
-// (A booking must always point at a real service, so the database would refuse anyway.)
+// DELETE /api/services/:id -> removes a service, but only if nobody has booked or bought it.
+// (Bookings and order lines must always point at a real service, so the database would refuse anyway.)
 router.delete('/:id', adminOnly, async (req, res) => {
   const [{ bookingCount }] = await db
     .select({ bookingCount: count() })
     .from(bookings)
     .where(eq(bookings.serviceId, req.params.id))
+  const [{ orderCount }] = await db
+    .select({ orderCount: count() })
+    .from(orderItems)
+    .where(eq(orderItems.serviceId, req.params.id))
 
-  if (bookingCount > 0) {
-    return res.status(409).json({ error: `This service has ${bookingCount} booking(s), so it cannot be deleted` })
+  if (bookingCount + orderCount > 0) {
+    return res.status(409).json({ error: 'People have booked or paid for this service, so it cannot be deleted' })
   }
 
   const [deleted] = await db.delete(services).where(eq(services.id, req.params.id)).returning()

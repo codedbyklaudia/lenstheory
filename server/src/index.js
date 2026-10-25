@@ -7,6 +7,10 @@
 //   /api/photos      GET  the gallery photos; POST/PUT/DELETE (admins)
 //   /api/uploads     POST an image file, get back its public URL (admins)
 //   /api/bookings    GET  my booking requests, POST a new one (must be signed in)
+//   /api/checkout    POST the basket -> creates a pending order + a Stripe payment page (signed in)
+//   /api/orders      GET  my orders, GET /:id one order with its lines (signed in)
+//   /api/shoots      GET  my photo sessions + delivered photos (signed in); manage them (admins)
+//   /api/stripe/webhook  POST from Stripe when a payment completes: the only thing that marks orders paid
 //   /api/enquiries   POST a contact-form message (anyone)
 //   /api/admin/*     the admin dashboard's data, status changes and email replies (admins only)
 //   /api/health      GET  quick "is the server up?" check
@@ -17,10 +21,14 @@ import { toNodeHandler } from 'better-auth/node'
 import { auth } from './auth.js'
 import adminRouter from './routes/admin.js'
 import bookingsRouter from './routes/bookings.js'
+import checkoutRouter from './routes/checkout.js'
 import contentRouter from './routes/content.js'
 import enquiriesRouter from './routes/enquiries.js'
+import ordersRouter from './routes/orders.js'
 import photosRouter from './routes/photos.js'
 import servicesRouter from './routes/services.js'
+import shootsRouter from './routes/shoots.js'
+import stripeRouter from './routes/stripe.js'
 import uploadsRouter from './routes/uploads.js'
 
 const app = express()
@@ -32,6 +40,10 @@ app.set('trust proxy', true)
 // Better Auth must come BEFORE express.json(), because it reads the request body itself.
 app.all('/api/auth/{*any}', toNodeHandler(auth))
 
+// The Stripe webhook also comes BEFORE express.json(): it must check Stripe's signature against
+// the raw, untouched body (see routes/stripe.js).
+app.use('/api/stripe', stripeRouter)
+
 // Turns a JSON request body into a normal JS object on req.body.
 app.use(express.json())
 
@@ -40,6 +52,9 @@ app.use('/api/content', contentRouter)
 app.use('/api/services', servicesRouter)
 app.use('/api/photos', photosRouter)
 app.use('/api/bookings', bookingsRouter)
+app.use('/api/checkout', checkoutRouter)
+app.use('/api/orders', ordersRouter)
+app.use('/api/shoots', shootsRouter)
 app.use('/api/enquiries', enquiriesRouter)
 app.use('/api/uploads', uploadsRouter)
 app.use('/api/admin', adminRouter)
@@ -51,6 +66,8 @@ app.use('/api', (req, res) => res.status(404).json({ error: 'Not found' }))
 app.use((error, req, res, next) => {
   // express.json() / express.raw() reject bodies over their size limit with status 413.
   if (error.status === 413) return res.status(413).json({ error: 'That is too big to upload' })
+  // express.json() could not read the body: the request's fault, so 400 rather than 500.
+  if (error.type === 'entity.parse.failed') return res.status(400).json({ error: 'The request body is not valid JSON' })
 
   console.error(error)
   res.status(500).json({ error: 'Something went wrong on the server' })

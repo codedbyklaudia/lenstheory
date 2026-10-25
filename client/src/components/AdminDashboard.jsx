@@ -4,6 +4,7 @@ import { apiFetch } from '../lib/api'
 import ContentEditor from './admin/ContentEditor'
 import EnquiryReply from './admin/EnquiryReply'
 import RecordsEditor from './admin/RecordsEditor'
+import ShootsEditor from './admin/ShootsEditor'
 import Button from './Button'
 import LensMark from './LensMark'
 import { gutter } from './Section'
@@ -11,7 +12,7 @@ import { gutter } from './Section'
 // The admin dashboard, shown at /admin (App decides which page to show).
 // It loads everything from GET /api/admin/overview. The SERVER checks that the visitor is an
 // admin; if not, it answers 401/403 and we show a message instead of the data.
-// The first three tabs are about customers; the last three edit the public site
+// The first five tabs are about customers; the last three edit the public site
 // (their components live in components/admin/).
 
 const formatDate = (value) =>
@@ -21,6 +22,9 @@ const statusStyles = {
   new: 'bg-ember text-cream',
   replied: 'bg-line text-ink-soft',
   requested: 'bg-gold text-ink',
+  pending: 'bg-gold text-ink',
+  paid: 'bg-night text-cream',
+  expired: 'bg-line text-ink-soft',
   confirmed: 'bg-night text-cream',
   cancelled: 'bg-line text-ink-soft line-through',
 }
@@ -64,8 +68,11 @@ function Table({ headings, children, empty }) {
   )
 }
 
-const tabs = [
+// Exported so the account menu (AccountButton) can link admins straight to any tab: /admin?tab=orders
+export const adminTabs = [
   { id: 'enquiries', label: 'Enquiries' },
+  { id: 'orders', label: 'Orders' },
+  { id: 'sessions', label: 'Sessions' },
   { id: 'bookings', label: 'Bookings' },
   { id: 'users', label: 'Users' },
   // A small gap before this one splits the tabs into "customers" and "edit the site"
@@ -77,7 +84,16 @@ const tabs = [
 export default function AdminDashboard({ user, isSessionPending, onSignIn, onSignOut }) {
   const [data, setData] = useState(null)
   const [error, setError] = useState('')
-  const [activeTab, setActiveTab] = useState('enquiries')
+  // The open tab comes from the address (/admin?tab=sessions), so links and refreshes keep it.
+  const [activeTab, setActiveTab] = useState(() => {
+    const tab = new URLSearchParams(window.location.search).get('tab')
+    return adminTabs.some((t) => t.id === tab) ? tab : 'enquiries'
+  })
+
+  function changeTab(tab) {
+    setActiveTab(tab)
+    window.history.replaceState(null, '', tab === 'enquiries' ? '/admin' : `/admin?tab=${tab}`)
+  }
 
   // EFFECT: load the dashboard data whenever the signed-in user changes.
   useEffect(() => {
@@ -171,7 +187,7 @@ export default function AdminDashboard({ user, isSessionPending, onSignIn, onSig
             user={user}
             error={error}
             activeTab={activeTab}
-            onTabChange={setActiveTab}
+            onTabChange={changeTab}
             onStatusChange={updateStatus}
             onReply={addReply}
           />
@@ -192,7 +208,7 @@ function Notice({ title, text, children }) {
 }
 
 function Dashboard({ data, user, error, activeTab, onTabChange, onStatusChange, onReply }) {
-  const { stats, enquiries, bookings, users } = data
+  const { stats, enquiries, orders, bookings, users } = data
   const firstName = user.name.trim().split(/\s+/)[0]
   // Which enquiry has its reply panel open (an id), or null.
   const [replyingTo, setReplyingTo] = useState(null)
@@ -214,14 +230,14 @@ function Dashboard({ data, user, error, activeTab, onTabChange, onStatusChange, 
 
       <div className="mb-12 grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
         <StatCard label="New enquiries" value={stats.newEnquiries} note={stats.newEnquiries > 0 ? 'Waiting for a reply' : 'All caught up'} />
-        <StatCard label="Booking requests" value={stats.bookings} />
-        <StatCard label="Requested value" value={`£${stats.requestedValue}`} note="Excludes cancelled bookings" />
+        <StatCard label="Paid online" value={`£${stats.paidRevenue}`} note={`${orders.filter((o) => o.status === 'paid').length} paid orders`} />
+        <StatCard label="Booking requests" value={stats.bookings} note={`£${stats.requestedValue} requested`} />
         <StatCard label="Users" value={stats.users} />
       </div>
 
       {/* Tabs: one list at a time */}
       <div role="tablist" aria-label="Dashboard lists" className="mb-6 flex flex-wrap gap-2">
-        {tabs.map((tab) => {
+        {adminTabs.map((tab) => {
           const isActive = tab.id === activeTab
           const badge = tab.id === 'enquiries' ? stats.newEnquiries : null
           return (
@@ -308,6 +324,38 @@ function Dashboard({ data, user, error, activeTab, onTabChange, onStatusChange, 
         </Table>
       )}
 
+      {/* Orders are paid through Stripe. Their status is set by the Stripe webhook, never by hand. */}
+      {activeTab === 'orders' && (
+        <Table headings={['Placed', 'Customer', 'Sessions', 'Total', 'Status']} empty={orders.length === 0 && 'No orders yet.'}>
+          {orders.map((order) => (
+            <tr key={order.id} className="align-top transition hover:bg-tint/60">
+              <td className="whitespace-nowrap px-5 py-4">
+                {formatDate(order.createdAt)}
+                <span className="block text-xs text-ink-soft">Order #{order.id}</span>
+              </td>
+              <td className="px-5 py-4">
+                <p className="font-medium">{order.userName}</p>
+                <a href={`mailto:${order.userEmail}`} className="text-ember underline-offset-4 hover:underline">
+                  {order.userEmail}
+                </a>
+              </td>
+              <td className="px-5 py-4">
+                {order.items.map((item) => (
+                  <p key={item.id}>
+                    {item.serviceName} &middot; {item.hours} h &times; £{item.pricePerHour}
+                  </p>
+                ))}
+              </td>
+              <td className="px-5 py-4 font-display text-lg">£{order.total}</td>
+              <td className="px-5 py-4">
+                <StatusPill status={order.status} />
+                {order.paidAt && <span className="mt-2 block text-xs text-ink-soft">Paid {formatDate(order.paidAt)}</span>}
+              </td>
+            </tr>
+          ))}
+        </Table>
+      )}
+
       {activeTab === 'bookings' && (
         <Table
           headings={['Requested', 'Customer', 'Session', 'Hours', 'Total', 'Status']}
@@ -367,6 +415,8 @@ function Dashboard({ data, user, error, activeTab, onTabChange, onStatusChange, 
           ))}
         </Table>
       )}
+
+      {activeTab === 'sessions' && <ShootsEditor users={users} />}
 
       {activeTab === 'content' && <ContentEditor />}
 

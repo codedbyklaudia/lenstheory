@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import { asc, count, desc, eq, sql } from 'drizzle-orm'
 import { db } from '../db/index.js'
-import { bookings, enquiries, enquiryReplies, services, user } from '../db/schema.js'
+import { bookings, enquiries, enquiryReplies, orderItems, orders, services, user } from '../db/schema.js'
 import { isEmailConfigured, sendEmail } from '../email.js'
 import { isAdmin, requireAdmin } from '../middleware/requireAdmin.js'
 import { requireAuth } from '../middleware/requireAuth.js'
@@ -45,6 +45,22 @@ router.get('/overview', async (req, res) => {
     .innerJoin(user, eq(bookings.userId, user.id))
     .orderBy(desc(bookings.createdAt))
 
+  // Orders with who placed them, plus each order's lines.
+  const orderRows = await db
+    .select({
+      id: orders.id,
+      status: orders.status,
+      total: orders.total,
+      createdAt: orders.createdAt,
+      paidAt: orders.paidAt,
+      userName: user.name,
+      userEmail: user.email,
+    })
+    .from(orders)
+    .innerJoin(user, eq(orders.userId, user.id))
+    .orderBy(desc(orders.createdAt))
+  const itemRows = await db.select().from(orderItems)
+
   // Users with how many bookings each has made (LEFT JOIN keeps users with none).
   const userRows = await db
     .select({
@@ -71,6 +87,7 @@ router.get('/overview', async (req, res) => {
       bookings: bookingRows.length,
       newEnquiries: enquiryRows.filter((enquiry) => enquiry.status === 'new').length,
       requestedValue,
+      paidRevenue: orderRows.filter((order) => order.status === 'paid').reduce((sum, order) => sum + order.total, 0),
     },
     // Each enquiry carries the replies sent to it, oldest first.
     enquiries: enquiryRows.map((enquiry) => ({
@@ -78,6 +95,7 @@ router.get('/overview', async (req, res) => {
       replies: replyRows.filter((reply) => reply.enquiryId === enquiry.id),
     })),
     bookings: bookingRows,
+    orders: orderRows.map((order) => ({ ...order, items: itemRows.filter((item) => item.orderId === order.id) })),
     users: userRows.map((row) => ({ ...row, isAdmin: isAdmin(row) })),
   })
 })
