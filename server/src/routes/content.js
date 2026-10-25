@@ -12,7 +12,15 @@ const router = Router()
 // what an admin has saved on top, field by field. So a section nobody has edited shows its default,
 // and a field added to the defaults later appears even in sections that were already saved.
 router.get('/', async (req, res) => {
-  const savedRows = await db.select().from(siteContent)
+  // If the table cannot be read (e.g. `npm run db:push` was not run yet, so it does not exist),
+  // log the problem and show the default text, instead of the whole site failing to load.
+  const savedRows = await db
+    .select()
+    .from(siteContent)
+    .catch((error) => {
+      console.error('Could not read site_content, showing the default text:', error.message)
+      return []
+    })
   const content = { ...defaultContent }
 
   for (const row of savedRows) {
