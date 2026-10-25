@@ -5,7 +5,8 @@ import SectionHeading from './SectionHeading'
 import ServiceCard from './ServiceCard'
 
 // `services` comes from App, which fetched it from GET /api/services.
-export default function Services({ services, error, onAddToBasket, onShowTerms, onEnquire }) {
+// `content` is the heading and "How booking works" text (from /api/content).
+export default function Services({ content, services, error, onAddToBasket, onShowTerms, onEnquire }) {
   return (
     <Section id="services">
       <SectionHeading
@@ -13,13 +14,12 @@ export default function Services({ services, error, onAddToBasket, onShowTerms, 
         number="03"
         title={
           <>
-            Choose your <em>session</em>
+            {content.title} <em>{content.titleHighlight}</em>
           </>
         }
         doodle="sun"
       >
-        Sessions are priced per hour. Pick how long you need and add it to your basket, or enquire for
-        a custom quote.
+        {content.intro}
       </SectionHeading>
 
       {error && <p className="mb-6 text-ink-soft">Sorry, the services could not be loaded ({error}).</p>}
@@ -39,7 +39,7 @@ export default function Services({ services, error, onAddToBasket, onShowTerms, 
         ))}
       </div>
 
-      <BookingSteps />
+      <BookingSteps title={content.stepsTitle} titleHighlight={content.stepsTitleHighlight} steps={content.steps} />
     </Section>
   )
 }

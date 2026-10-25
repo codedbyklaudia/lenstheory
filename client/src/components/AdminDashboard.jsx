@@ -1,5 +1,9 @@
-import { useEffect, useState } from 'react'
+import { Fragment, useEffect, useState } from 'react'
+import { newPhoto, newService, photoFields, serviceFields } from '../data/adminFields'
 import { apiFetch } from '../lib/api'
+import ContentEditor from './admin/ContentEditor'
+import EnquiryReply from './admin/EnquiryReply'
+import RecordsEditor from './admin/RecordsEditor'
 import Button from './Button'
 import LensMark from './LensMark'
 import { gutter } from './Section'
@@ -7,6 +11,8 @@ import { gutter } from './Section'
 // The admin dashboard, shown at /admin (App decides which page to show).
 // It loads everything from GET /api/admin/overview. The SERVER checks that the visitor is an
 // admin; if not, it answers 401/403 and we show a message instead of the data.
+// The first three tabs are about customers; the last three edit the public site
+// (their components live in components/admin/).
 
 const formatDate = (value) =>
   new Date(value).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
@@ -62,6 +68,10 @@ const tabs = [
   { id: 'enquiries', label: 'Enquiries' },
   { id: 'bookings', label: 'Bookings' },
   { id: 'users', label: 'Users' },
+  // A small gap before this one splits the tabs into "customers" and "edit the site"
+  { id: 'content', label: 'Page content', className: 'sm:ml-4' },
+  { id: 'gallery', label: 'Gallery' },
+  { id: 'services', label: 'Services' },
 ]
 
 export default function AdminDashboard({ user, isSessionPending, onSignIn, onSignOut }) {
@@ -94,6 +104,17 @@ export default function AdminDashboard({ user, isSessionPending, onSignIn, onSig
     } catch (err) {
       setError(err.message)
     }
+  }
+
+  // A reply was emailed: add it under its enquiry, which the server has now marked 'replied'.
+  function addReply(reply) {
+    setData((current) => {
+      const rows = current.enquiries.map((row) =>
+        row.id === reply.enquiryId ? { ...row, status: 'replied', replies: [...row.replies, reply] } : row,
+      )
+      const newEnquiries = rows.filter((row) => row.status === 'new').length
+      return { ...current, enquiries: rows, stats: { ...current.stats, newEnquiries } }
+    })
   }
 
   // ---- The page frame: a slim top bar, then whichever state we are in ----
@@ -145,7 +166,15 @@ export default function AdminDashboard({ user, isSessionPending, onSignIn, onSig
         ) : !data ? (
           <p className="text-ink-soft">Loading the dashboard&hellip;</p>
         ) : (
-          <Dashboard data={data} user={user} error={error} activeTab={activeTab} onTabChange={setActiveTab} onStatusChange={updateStatus} />
+          <Dashboard
+            data={data}
+            user={user}
+            error={error}
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+            onStatusChange={updateStatus}
+            onReply={addReply}
+          />
         )}
       </main>
     </div>
@@ -162,9 +191,11 @@ function Notice({ title, text, children }) {
   )
 }
 
-function Dashboard({ data, user, error, activeTab, onTabChange, onStatusChange }) {
+function Dashboard({ data, user, error, activeTab, onTabChange, onStatusChange, onReply }) {
   const { stats, enquiries, bookings, users } = data
   const firstName = user.name.trim().split(/\s+/)[0]
+  // Which enquiry has its reply panel open (an id), or null.
+  const [replyingTo, setReplyingTo] = useState(null)
 
   return (
     <>
@@ -202,7 +233,7 @@ function Dashboard({ data, user, error, activeTab, onTabChange, onStatusChange }
               onClick={() => onTabChange(tab.id)}
               className={`flex items-center gap-2 rounded-full border px-5 py-2.5 text-sm font-medium transition duration-200 hover:-translate-y-0.5 ${
                 isActive ? 'border-ink bg-ink text-cream shadow-md' : 'border-ink/25 bg-cream text-ink hover:border-ink'
-              }`}
+              } ${tab.className ?? ''}`}
             >
               {tab.label}
               {badge > 0 && (
@@ -219,37 +250,60 @@ function Dashboard({ data, user, error, activeTab, onTabChange, onStatusChange }
           empty={enquiries.length === 0 && 'No enquiries yet.'}
         >
           {enquiries.map((enquiry) => (
-            <tr key={enquiry.id} className={`align-top transition hover:bg-tint/60 ${enquiry.status === 'new' ? '' : 'text-ink-soft'}`}>
-              <td className="whitespace-nowrap px-5 py-4">{formatDate(enquiry.createdAt)}</td>
-              <td className="px-5 py-4">
-                <p className="font-medium text-ink">{enquiry.name}</p>
-                <a href={`mailto:${enquiry.email}`} className="text-ember underline-offset-4 hover:underline">
-                  {enquiry.email}
-                </a>
-              </td>
-              <td className="whitespace-nowrap px-5 py-4">{enquiry.shootType}</td>
-              <td className="whitespace-nowrap px-5 py-4">
-                {enquiry.preferredDate ? formatDate(enquiry.preferredDate) : 'No date'}
-                <span className="block text-xs text-ink-soft">{enquiry.timeOfDay}</span>
-              </td>
-              <td className="max-w-md px-5 py-4">
-                <p className="line-clamp-3 whitespace-pre-line" title={enquiry.message}>
-                  {enquiry.message}
-                </p>
-              </td>
-              <td className="px-5 py-4">
-                <div className="flex flex-col items-start gap-2">
-                  <StatusPill status={enquiry.status} />
-                  <button
-                    type="button"
-                    onClick={() => onStatusChange('enquiries', enquiry.id, enquiry.status === 'new' ? 'replied' : 'new')}
-                    className="whitespace-nowrap text-xs font-medium text-ink underline underline-offset-4 transition hover:text-ember"
-                  >
-                    {enquiry.status === 'new' ? 'Mark as replied' : 'Mark as new'}
-                  </button>
-                </div>
-              </td>
-            </tr>
+            // Fragment: each enquiry is its row, plus a second full-width row when its reply panel is open.
+            <Fragment key={enquiry.id}>
+              <tr className={`align-top transition hover:bg-tint/60 ${enquiry.status === 'new' ? '' : 'text-ink-soft'}`}>
+                <td className="whitespace-nowrap px-5 py-4">{formatDate(enquiry.createdAt)}</td>
+                <td className="px-5 py-4">
+                  <p className="font-medium text-ink">{enquiry.name}</p>
+                  <a href={`mailto:${enquiry.email}`} className="text-ember underline-offset-4 hover:underline">
+                    {enquiry.email}
+                  </a>
+                </td>
+                <td className="whitespace-nowrap px-5 py-4">{enquiry.shootType}</td>
+                <td className="whitespace-nowrap px-5 py-4">
+                  {enquiry.preferredDate ? formatDate(enquiry.preferredDate) : 'No date'}
+                  <span className="block text-xs text-ink-soft">{enquiry.timeOfDay}</span>
+                </td>
+                <td className="max-w-md px-5 py-4">
+                  <p className="line-clamp-3 whitespace-pre-line" title={enquiry.message}>
+                    {enquiry.message}
+                  </p>
+                </td>
+                <td className="px-5 py-4">
+                  <div className="flex flex-col items-start gap-2">
+                    <StatusPill status={enquiry.status} />
+                    {enquiry.replies.length > 0 && (
+                      <span className="text-xs text-ink-soft">
+                        {enquiry.replies.length} {enquiry.replies.length === 1 ? 'reply' : 'replies'} sent
+                      </span>
+                    )}
+                    <Button
+                      size="sm"
+                      variant={replyingTo === enquiry.id ? 'ghost' : 'primary'}
+                      aria-expanded={replyingTo === enquiry.id}
+                      onClick={() => setReplyingTo(replyingTo === enquiry.id ? null : enquiry.id)}
+                    >
+                      {replyingTo === enquiry.id ? 'Close' : 'Reply'}
+                    </Button>
+                    <button
+                      type="button"
+                      onClick={() => onStatusChange('enquiries', enquiry.id, enquiry.status === 'new' ? 'replied' : 'new')}
+                      className="whitespace-nowrap text-xs font-medium text-ink underline underline-offset-4 transition hover:text-ember"
+                    >
+                      {enquiry.status === 'new' ? 'Mark as replied' : 'Mark as new'}
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              {replyingTo === enquiry.id && (
+                <tr className="bg-cream text-ink">
+                  <td colSpan={6} className="px-5 py-6">
+                    <EnquiryReply enquiry={enquiry} admin={user} onSent={onReply} />
+                  </td>
+                </tr>
+              )}
+            </Fragment>
           ))}
         </Table>
       )}
@@ -312,6 +366,32 @@ function Dashboard({ data, user, error, activeTab, onTabChange, onStatusChange }
             </tr>
           ))}
         </Table>
+      )}
+
+      {activeTab === 'content' && <ContentEditor />}
+
+      {activeTab === 'gallery' && (
+        <RecordsEditor
+          endpoint="/api/photos"
+          fields={photoFields}
+          newRecord={newPhoto}
+          itemLabel="photo"
+          getTitle={(photo) => `${photo.category}: ${photo.alt}`}
+          getImage={(photo) => photo.src}
+          intro="The photos in the gallery, in the order they appear. Use the arrows to reorder."
+        />
+      )}
+
+      {activeTab === 'services' && (
+        <RecordsEditor
+          endpoint="/api/services"
+          fields={serviceFields}
+          newRecord={newService}
+          itemLabel="service"
+          getTitle={(service) => (service.bookable ? `${service.name} · £${service.pricePerHour}/hour` : `${service.name} · enquire only`)}
+          getImage={(service) => service.image}
+          intro="The session cards customers book from. A service that has bookings cannot be deleted."
+        />
       )}
     </>
   )

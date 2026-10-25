@@ -1,6 +1,7 @@
 // The starting content for the database. This used to be hardcoded in the React app
 // (client/src/data/studioData.js). `npm run db:seed` copies it into the real tables.
-// After seeding, the database is the source of truth and the frontend fetches it from the API.
+// After seeding, the database is the source of truth: admins change photos and services in the
+// dashboard, and the frontend fetches them from the API.
 
 // ---- Gallery ----------------------------------------------------------------
 // `src` points at files in client/public/images (served by the frontend).
@@ -67,3 +68,106 @@ export const services = [
     ],
   },
 ]
+
+// ---- Page text and images ------------------------------------------------------
+// Everything an admin can edit in the dashboard's "Page content" tab, one object per section.
+// These are NOT copied into the database: GET /api/content starts from these defaults and lays
+// whatever an admin has saved (the `site_content` table) on top of them.
+//
+// Headings are split in two: `title` is the normal part and `titleHighlight` is the italic,
+// coloured ending (e.g. "Selected" + "work").
+export const siteContent = {
+  hero: {
+    title: 'Portraits that feel',
+    titleHighlight: 'like you.',
+    subtitle:
+      'Portraits, weddings and family stories shaped by a clear point of view. Thoughtful light, honest moments, and photographs made to last.',
+    // `position` is the CSS object-position: 'center 20%' shows more of the top of the photo.
+    slides: [
+      { src: '/images/studio-1.avif', label: 'Studio', position: 'center 30%' },
+      { src: '/images/wedding-photo.jpeg', label: 'Weddings', position: 'center 35%' },
+      { src: '/images/portrait-photo.jpg', label: 'Portraits', position: 'center 25%' },
+      { src: '/images/family-photo.jpg', label: 'Family', position: 'center 40%' },
+    ],
+  },
+
+  // The two bands of gliding words: under the hero, and above the contact section.
+  marquees: {
+    top: ['Portraits', 'Weddings', 'Family', 'Pets', 'Events'],
+    bottom: ['Golden hour', 'Say cheese!', 'Soft bokeh', 'Candids', 'Studio lights', 'Just one more shot'],
+  },
+
+  gallery: {
+    title: 'Selected',
+    titleHighlight: 'work',
+    intro: 'A look at recent sessions, from quiet portraits to wedding days and family afternoons.',
+  },
+
+  about: {
+    title: 'Every good photograph starts with a',
+    titleHighlight: 'point of view',
+    intro:
+      'Lens Theory is a photography studio built on honest moments and considered light. We take time to understand the people in front of the camera, so the images still feel like you years from now.',
+    image: '/images/portrait-photo.jpg',
+    imageAlt: 'Portrait photograph by Lens Theory',
+    captionTitle: 'Studio & on location',
+    captionText: 'Portraits · Weddings · Families',
+    points: [
+      { title: 'Natural light', text: 'Soft, flattering daylight wherever we can find it.' },
+      { title: 'Honest moments', text: 'Gentle direction, so expressions stay real and never staged.' },
+      { title: 'Timeless edit', text: 'Refined, true-to-life colour that still looks right in twenty years.' },
+    ],
+  },
+
+  services: {
+    title: 'Choose your',
+    titleHighlight: 'session',
+    intro:
+      'Sessions are priced per hour. Pick how long you need and add it to your basket, or enquire for a custom quote.',
+    stepsTitle: 'How booking',
+    stepsTitleHighlight: 'works',
+    steps: [
+      { title: 'Enquire', text: 'Tell us what you have in mind and your preferred date.', meta: 'Reply within two working days' },
+      { title: 'Plan', text: 'We talk through the look, the location and the timing, so the day feels easy.', meta: 'Look, location, timing' },
+      { title: 'Shoot & deliver', text: 'Relax in front of the camera. Your edited gallery follows, ready to share and print.', meta: 'Gallery in two to three weeks' },
+    ],
+  },
+
+  contact: {
+    title: "Let's make something",
+    titleHighlight: 'worth framing',
+    intro: 'Tell us about your shoot and we will get back to you within two working days.',
+    email: 'hello@lenstheory.co.uk',
+    replyTime: 'Within two working days',
+    sessions: 'Studio and on location',
+    backgroundImage: '/images/family-photo.jpg',
+    faqTitle: 'Good to know before you book',
+    faqs: [
+      { question: 'How far in advance should I book?', answer: 'Weddings book up early, so get in touch as soon as you have a date. Portrait and family sessions can often be arranged within a few weeks.' },
+      { question: 'Do you shoot on location?', answer: 'Yes. We photograph in the studio and on location. Travel beyond the local area is quoted individually.' },
+      { question: 'When will I receive my photos?', answer: 'Most sessions are delivered within two to three weeks. Weddings can take a little longer, and we will always give you a date upfront.' },
+      { question: 'What should I wear?', answer: 'Choose outfits you feel comfortable in. Soft, solid colours photograph beautifully, and we are happy to help you plan before the day.' },
+      { question: 'Can I print my photos?', answer: 'Yes. You receive high-resolution images that are ready for printing and sharing.' },
+    ],
+  },
+
+  footer: {
+    eyebrow: 'Ready when you are',
+    title: 'Your story,',
+    titleHighlight: 'beautifully framed.',
+    blurb: 'A photography studio for portraits, weddings and family sessions, in the studio and on location.',
+    // The row of photos gliding across the top of the footer. About 10 fills a big screen.
+    photos: [
+      '/images/portrait-1.jpg',
+      '/images/wedding-1.webp',
+      '/images/family-6.jpg',
+      '/images/pet.webp',
+      '/images/event-1.jpg',
+      '/images/portrait-2.jpg',
+      '/images/family-5.jpg',
+      '/images/wedding-4.webp',
+      '/images/event-3.jpg',
+      '/images/family-7.jpg',
+    ],
+  },
+}

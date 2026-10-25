@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { contactInfo, footerPhotos, navLinks } from '../data/studioData'
+import { navLinks } from '../data/studioData'
 import LensMark from './LensMark'
 import Reveal from './Reveal'
 import { gutter } from './Section'
@@ -24,7 +24,11 @@ function FooterLink({ href, children }) {
   )
 }
 
-export default function Footer() {
+// `content` is the footer's editable text and photo strip (from /api/content).
+// `studioEmail` is the studio's address (edited with the contact section).
+export default function Footer({ content, studioEmail }) {
+  const photos = content.photos
+
   // Controlled input: the email text lives in state, and the input just displays it.
   const [email, setEmail] = useState('')
   const [subscribed, setSubscribed] = useState(false)
@@ -42,7 +46,7 @@ export default function Footer() {
         {/* Two copies of the photos side by side; the marquee animation slides by exactly one copy.
             Each photo has a right margin (not a flex gap), so both copies are exactly the same width. */}
         <div className="flex w-max animate-marquee group-hover/marquee:[animation-play-state:paused] motion-reduce:animate-none">
-          {[...footerPhotos, ...footerPhotos].map((src, index) => (
+          {[...photos, ...photos].map((src, index) => (
             <img
               key={index}
               src={src}
@@ -59,13 +63,13 @@ export default function Footer() {
         <div className="flex flex-col gap-10 border-t border-cream/10 py-16 sm:py-20 lg:flex-row lg:items-center lg:justify-between">
           <Reveal>
             <p className="mb-5 flex items-center gap-3 text-sm font-medium uppercase tracking-[0.22em] text-gold">
-              Ready when you are
+              {content.eyebrow}
               <span aria-hidden="true" className="h-px w-10 bg-current opacity-60" />
             </p>
             {/* The size follows the screen width (vw), so "beautifully framed." stretches across
                 most of the footer on any screen instead of stopping at a fixed size */}
             <h2 className="font-display text-[clamp(3rem,8vw,10rem)] font-medium leading-[0.95] tracking-tight">
-              Your story, <span className="block italic text-gold lg:whitespace-nowrap">beautifully framed.</span>
+              {content.title} <span className="block italic text-gold lg:whitespace-nowrap">{content.titleHighlight}</span>
             </h2>
           </Reveal>
 
@@ -86,7 +90,7 @@ export default function Footer() {
               </span>
             </a>
             <p className="text-base text-cream/65 sm:text-lg">
-              A photography studio for portraits, weddings and family sessions, in the studio and on location.
+              {content.blurb}
             </p>
           </div>
 
@@ -106,10 +110,10 @@ export default function Footer() {
             <ul className="flex flex-col gap-2.5 text-cream/60">
               <li>
                 <a
-                  href={`mailto:${contactInfo.email}`}
+                  href={`mailto:${studioEmail}`}
                   className="break-words font-display text-lg text-cream/90 underline decoration-cream/25 underline-offset-[6px] transition hover:text-gold hover:decoration-gold sm:text-xl"
                 >
-                  {contactInfo.email}
+                  {studioEmail}
                 </a>
               </li>
             </ul>

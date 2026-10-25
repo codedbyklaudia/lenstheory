@@ -4,7 +4,8 @@ import { auth } from '../auth.js'
 import { db } from '../db/index.js'
 import { enquiries } from '../db/schema.js'
 
-const SHOOT_TYPES = ['Portrait', 'Wedding', 'Family session', 'Something else']
+// Exported so the services routes can check a service's enquiry type against the same list.
+export const SHOOT_TYPES = ['Portrait', 'Wedding', 'Family session', 'Something else']
 const TIMES_OF_DAY = ['Flexible', 'Morning', 'Afternoon', 'Evening']
 
 const router = Router()

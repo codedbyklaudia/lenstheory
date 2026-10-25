@@ -1,3 +1,5 @@
+import { requireAuth } from './requireAuth.js'
+
 // Who counts as an admin: the email addresses listed in ADMIN_EMAILS (comma-separated) in .env.
 //   ADMIN_EMAILS=klaudia@example.com,assistant@example.com
 export function isAdmin(user) {
@@ -17,3 +19,8 @@ export function requireAdmin(req, res, next) {
   }
   next()
 }
+
+// Both checks in one, for single routes that only admins may use (e.g. editing a photo):
+//   router.put('/:id', adminOnly, async (req, res) => { ... })
+// Express runs the functions in the array one after the other.
+export const adminOnly = [requireAuth, requireAdmin]

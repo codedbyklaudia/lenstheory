@@ -1,7 +1,8 @@
 import { Router } from 'express'
-import { count, desc, eq, sql } from 'drizzle-orm'
+import { asc, count, desc, eq, sql } from 'drizzle-orm'
 import { db } from '../db/index.js'
-import { bookings, enquiries, services, user } from '../db/schema.js'
+import { bookings, enquiries, enquiryReplies, services, user } from '../db/schema.js'
+import { isEmailConfigured, sendEmail } from '../email.js'
 import { isAdmin, requireAdmin } from '../middleware/requireAdmin.js'
 import { requireAuth } from '../middleware/requireAuth.js'
 
@@ -25,6 +26,7 @@ router.use(requireAdmin)
 // GET /api/admin/overview -> the totals and the three lists the dashboard shows.
 router.get('/overview', async (req, res) => {
   const enquiryRows = await db.select().from(enquiries).orderBy(desc(enquiries.createdAt))
+  const replyRows = await db.select().from(enquiryReplies).orderBy(asc(enquiryReplies.createdAt))
 
   // Bookings joined with who booked and what they booked.
   const bookingRows = await db
@@ -70,7 +72,11 @@ router.get('/overview', async (req, res) => {
       newEnquiries: enquiryRows.filter((enquiry) => enquiry.status === 'new').length,
       requestedValue,
     },
-    enquiries: enquiryRows,
+    // Each enquiry carries the replies sent to it, oldest first.
+    enquiries: enquiryRows.map((enquiry) => ({
+      ...enquiry,
+      replies: replyRows.filter((reply) => reply.enquiryId === enquiry.id),
+    })),
     bookings: bookingRows,
     users: userRows.map((row) => ({ ...row, isAdmin: isAdmin(row) })),
   })
@@ -91,6 +97,42 @@ router.patch('/enquiries/:id', async (req, res) => {
 
   if (!updated) return res.status(404).json({ error: 'Enquiry not found' })
   res.json(updated)
+})
+
+// POST /api/admin/enquiries/:id/replies  body: { message: 'Hi Anna, thanks for...' }
+// Emails the reply to the person who sent the enquiry, saves a copy, and marks the enquiry 'replied'.
+router.post('/enquiries/:id/replies', async (req, res) => {
+  const message = req.body?.message?.trim()
+  if (!message) return res.status(400).json({ error: 'Please write a reply first' })
+  if (!isEmailConfigured()) {
+    return res.status(503).json({ error: 'Email sending is not set up yet (RESEND_API_KEY / EMAIL_FROM are missing)' })
+  }
+
+  const [enquiry] = await db.select().from(enquiries).where(eq(enquiries.id, Number(req.params.id)))
+  if (!enquiry) return res.status(404).json({ error: 'Enquiry not found' })
+
+  // Send first, save second: if the email fails, nothing is saved and the admin sees why.
+  // The customer's original message is quoted underneath, like a normal email reply.
+  const sentOn = enquiry.createdAt.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
+  const quoted = enquiry.message.replace(/^/gm, '> ')
+  try {
+    await sendEmail({
+      to: enquiry.email,
+      subject: `Re: your ${enquiry.shootType.toLowerCase()} enquiry - Lens Theory`,
+      text: `${message}\n\n---\nOn ${sentOn} you wrote:\n${quoted}`,
+      replyTo: req.user.email, // the customer's answer lands in this admin's inbox
+    })
+  } catch (error) {
+    return res.status(502).json({ error: `The email was not sent: ${error.message}` })
+  }
+
+  const [reply] = await db
+    .insert(enquiryReplies)
+    .values({ enquiryId: enquiry.id, message: message.slice(0, 10000), sentBy: req.user.email })
+    .returning()
+  await db.update(enquiries).set({ status: 'replied' }).where(eq(enquiries.id, enquiry.id))
+
+  res.status(201).json(reply)
 })
 
 // PATCH /api/admin/bookings/:id  body: { status: 'confirmed' }

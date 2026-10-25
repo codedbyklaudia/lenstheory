@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import { heroSlides } from '../data/studioData'
 import Button from './Button'
 import Doodle, { Squiggle } from './Doodle'
 import Reveal from './Reveal'
@@ -28,21 +27,24 @@ function HeroButtons() {
   )
 }
 
-export default function Hero() {
-  // STATE: which photo is showing (an index into heroSlides).
+// `content` is the hero's editable text and slideshow photos (from /api/content, set in the admin dashboard).
+export default function Hero({ content }) {
+  const { slides } = content
+
+  // STATE: which photo is showing (an index into slides).
   const [activeSlide, setActiveSlide] = useState(0)
 
   // EFFECT: move to the next photo every SLIDE_MS. People who prefer reduced motion
   // just keep the first photo. The returned function clears the timer.
   useEffect(() => {
-    if (prefersReducedMotion()) return
+    if (prefersReducedMotion() || slides.length < 2) return
 
     const timer = setInterval(() => {
-      setActiveSlide((current) => (current + 1) % heroSlides.length)
+      setActiveSlide((current) => (current + 1) % slides.length)
     }, SLIDE_MS)
 
     return () => clearInterval(timer)
-  }, [])
+  }, [slides.length])
 
   return (
     <section
@@ -50,11 +52,11 @@ export default function Hero() {
       className="relative isolate flex min-h-svh flex-col overflow-hidden text-cream"
     >
       {/* Background photos. All are stacked; only the active one is visible (opacity 100). */}
-      {heroSlides.map((slide, index) => {
+      {slides.map((slide, index) => {
         const isActive = index === activeSlide
         return (
           <img
-            key={slide.id}
+            key={index}
             src={slide.src}
             alt=""
             loading={index === 0 ? 'eager' : 'lazy'}
@@ -84,9 +86,9 @@ export default function Hero() {
             >
               {/* camera doodle bobbing just above the start of the title */}
               <Doodle name="camera" className="absolute -top-20 left-1 hidden size-16 animate-float text-gold/80 lg:block" />
-              Portraits that feel{' '}
+              {content.title}{' '}
               <span className="relative inline-block italic text-gold">
-                like you.
+                {content.titleHighlight}
                 {/* hand-drawn underline that draws itself once the headline has arrived */}
                 <Squiggle delay={1100} className="text-gold" />
                 {/* two little sparkles twinkling at the end of the line */}
@@ -114,8 +116,7 @@ export default function Hero() {
               delay={450}
               className="max-w-lg text-pretty text-xl text-cream/85 sm:text-2xl lg:text-right"
             >
-              Portraits, weddings and family stories shaped by a clear point of view. Thoughtful light,
-              honest moments, and photographs made to last.
+              {content.subtitle}
             </Reveal>
 
             <div style={stagger(5)} className="flex animate-fade-up flex-col gap-4 motion-reduce:animate-none sm:flex-row lg:hidden">

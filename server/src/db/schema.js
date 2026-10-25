@@ -113,6 +113,27 @@ export const enquiries = pgTable('enquiries', {
   createdAt: timestamp('created_at').notNull().defaultNow(),
 })
 
+// One row per email reply an admin sent to an enquiry from the dashboard.
+// Deleting the enquiry deletes its replies too.
+export const enquiryReplies = pgTable('enquiry_replies', {
+  id: serial('id').primaryKey(),
+  enquiryId: integer('enquiry_id')
+    .notNull()
+    .references(() => enquiries.id, { onDelete: 'cascade' }),
+  message: text('message').notNull(),
+  sentBy: text('sent_by').notNull(), // the email of the admin who sent it
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+})
+
+// The page's editable text and images, one row per section ('hero', 'about', 'contact'...).
+// `value` holds that section's fields as JSON, e.g. { title: '...', subtitle: '...', slides: [...] }.
+// A section only gets a row once an admin saves it; until then the defaults in seedData.js are shown.
+export const siteContent = pgTable('site_content', {
+  key: text('key').primaryKey(),
+  value: jsonb('value').notNull(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+})
+
 // One row per booking request a signed-in user sends from their basket.
 // Links a user to a service, with how many hours they want.
 export const bookings = pgTable('bookings', {

@@ -11,7 +11,8 @@ const shapeClasses = {
   square: 'aspect-square',
 }
 
-export default function Gallery() {
+// `content` is the heading text (from /api/content); the photos themselves come from /api/photos.
+export default function Gallery({ content }) {
   // The photos come from the database, through GET /api/photos.
   const { data, error, isLoading } = useApi('/api/photos')
   const galleryPhotos = data ?? []
@@ -65,13 +66,13 @@ export default function Gallery() {
         number="01"
         title={
           <>
-            Selected <em>work</em>
+            {content.title} <em>{content.titleHighlight}</em>
           </>
         }
         doodle="camera"
         aside={filterButtons}
       >
-        A look at recent sessions, from quiet portraits to wedding days and family afternoons.
+        {content.intro}
       </SectionHeading>
 
       <p aria-live="polite" className="mb-6 text-sm text-ink-soft">

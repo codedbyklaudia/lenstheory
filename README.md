@@ -15,30 +15,38 @@ LensTheory/
 ├── client/                  React frontend (Vite + Tailwind)  -> Vercel service `client`
 │   ├── src/
 │   │   ├── components/      UI pieces (Header, Gallery, AuthModal, BasketDrawer...)
-│   │   ├── data/            text that stays in the frontend (FAQ, nav links, hero slides)
+│   │   │   └── admin/       the dashboard's editors: FieldInput, ContentEditor, RecordsEditor, EnquiryReply
+│   │   ├── data/
+│   │   │   ├── studioData.js   the little that stays hardcoded (nav links, shoot types)
+│   │   │   └── adminFields.js  which fields the dashboard lets admins edit, described as data
 │   │   └── lib/
 │   │       ├── api.js       apiFetch() + useApi() hook for calling our API
-│   │       └── authClient.js  Better Auth in the browser (sign up / in / out, useSession)
+│   │       ├── authClient.js  Better Auth in the browser (sign up / in / out, useSession)
+│   │       └── uploadImage.js shrinks a photo in the browser, then uploads it
 │   └── vite.config.js       dev proxy: /api -> http://localhost:3000
 │
 └── server/                  Express API  -> Vercel service `server`
     ├── src/
     │   ├── index.js         creates the Express app and plugs in every route
     │   ├── auth.js          Better Auth config (email + password, 7-day sessions)
+    │   ├── email.js         sendEmail() through Resend, for replying to enquiries
     │   ├── middleware/
     │   │   ├── requireAuth.js   blocks a route unless the request has a valid session
     │   │   └── requireAdmin.js  blocks a route unless that user's email is in ADMIN_EMAILS
+    │   │                        (+ `adminOnly` = both checks, for single routes)
     │   ├── routes/
-    │   │   ├── services.js  GET /api/services
-    │   │   ├── photos.js    GET /api/photos
+    │   │   ├── content.js   GET /api/content (anyone), PUT/DELETE a section (admins)
+    │   │   ├── services.js  GET /api/services (anyone), add/edit/delete/reorder (admins)
+    │   │   ├── photos.js    GET /api/photos (anyone), add/edit/delete/reorder (admins)
+    │   │   ├── uploads.js   POST /api/uploads: image -> Vercel Blob -> public URL (admins)
     │   │   ├── bookings.js  GET + POST /api/bookings (signed-in users only)
     │   │   ├── enquiries.js POST /api/enquiries (contact form, anyone)
-    │   │   └── admin.js     /api/admin/* dashboard data + status changes (admins only)
+    │   │   └── admin.js     /api/admin/* dashboard data, status changes, email replies (admins only)
     │   └── db/
     │       ├── schema.js    every table, defined with Drizzle ORM
     │       ├── index.js     the database connection
-    │       ├── seedData.js  the old hardcoded services + photos
-    │       └── seed.js      copies seedData into the database
+    │       ├── seedData.js  starting services + photos, and the default page text
+    │       └── seed.js      copies the services + photos into the database
     ├── drizzle.config.js    settings for `npm run db:push`
     └── .env.example         which secrets the server needs (the real .env is git-ignored)
 ```
@@ -67,16 +75,42 @@ Browser ──> one Vercel domain
 | `gallery_photos` | a photo in the gallery | image path, alt text, category, shape |
 | `bookings` | a booking request from a signed-in user | which user, which service, hours, price at the time, status (requested / confirmed / cancelled) |
 | `enquiries` | a message sent through the contact form | name, email, shoot type, preferred date, message, user (if signed in), status (new / replied) |
+| `enquiry_replies` | an email an admin sent back from the dashboard | which enquiry, the message, which admin sent it |
+| `site_content` | one section of the page an admin has edited | key (`hero`, `about`...), value (that section's fields as JSON) |
 
 Relationships: a user has many sessions, accounts and bookings (`user_id` foreign keys; deleting a
 user deletes them too). Each booking points to one service (`service_id`). An enquiry *may* point to
 a user: guests can send one too, so `user_id` is optional (and set to null if that user is deleted).
-The first four tables are managed by Better Auth; the last four are ours.
+An enquiry has many replies (`enquiry_id`; deleting the enquiry deletes them).
+The first four tables are managed by Better Auth; the rest are ours.
 
 ## Admin dashboard
 
-`/admin` shows the studio's dashboard: totals, every enquiry, booking and user. Admins can mark
-enquiries as replied and confirm or cancel bookings.
+`/admin` shows the studio's dashboard. The first three tabs are about customers, the last three edit
+the public site, so the studio can change it without touching code:
+
+| Tab | What admins can do |
+| --- | --- |
+| Enquiries | read every message, **reply by email** (the server sends it through Resend and saves a copy), mark as replied |
+| Bookings | confirm or cancel booking requests |
+| Users | see who signed up and how many bookings each made |
+| Page content | edit every section's text and photos: hero slideshow, word bands, about, booking steps, contact details, FAQ, footer |
+| Gallery | add, edit, delete and reorder gallery photos |
+| Services | add, edit, delete and reorder services (prices, features, terms) |
+
+**How editable page text works.** The default text for every section is in `server/src/db/seedData.js`
+(`siteContent`). When an admin saves a section, it is stored as one row in `site_content`.
+`GET /api/content` returns the defaults with the saved rows laid on top, and `App.jsx` passes each
+section's part down to its component as a `content` prop. "Reset to original" deletes the row.
+
+**How the editors are built.** `client/src/data/adminFields.js` describes each form as data
+(`{ name: 'subtitle', label: 'Subtitle', type: 'textarea' }`). `FieldInput` draws the right input for a
+`type`, so the Page content, Gallery and Services forms are all made of the same parts.
+
+**Uploading photos.** On Vercel the server's disk is wiped between requests, so uploaded files are stored in
+Vercel Blob instead and only their URL goes in the database. The browser first shrinks the photo
+(`lib/uploadImage.js`), because Vercel only accepts requests up to about 4.5 MB. Admins can also paste the
+address of an image that is already online, or of one in `client/public/images` (e.g. `/images/pet.webp`).
 
 Who is an admin is decided **on the server**, by the `ADMIN_EMAILS` variable (comma-separated emails).
 Every `/api/admin/*` route runs `requireAuth` then `requireAdmin`, so a non-admin gets `403 Admins only`
@@ -93,7 +127,7 @@ cd server
 npm install
 cp .env.example .env      # then fill in DATABASE_URL and BETTER_AUTH_SECRET
 npm run db:push           # creates the tables in your database
-npm run db:seed           # fills services + gallery_photos
+npm run db:seed           # fills services + gallery_photos (never overwrites admin changes)
 npm run dev               # API on http://localhost:3000
 
 # 2. Client (in a second terminal)
@@ -121,6 +155,8 @@ full path (`/api/services`), which matches its routes.
    - `BETTER_AUTH_SECRET`: a long random string
    - `BETTER_AUTH_URL`: the production URL, e.g. `https://lenstheory.vercel.app`
    - `ADMIN_EMAILS`: the email(s) allowed into `/admin`
+   - `RESEND_API_KEY` and `EMAIL_FROM`: for replying to enquiries (see `server/.env.example`)
+   - Storage tab -> create a **Blob** store and connect it: this adds `BLOB_READ_WRITE_TOKEN` (photo uploads)
 3. Deploy. Check `https://<your-domain>/api/services` shows JSON, then sign up on the live site.
 
 Vercel's own domains (production, preview and the deployment URL) are trusted for login automatically

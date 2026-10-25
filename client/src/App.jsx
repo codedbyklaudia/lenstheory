@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { MAX_HOURS, photoTalk, specialisms } from './data/studioData'
+import { MAX_HOURS } from './data/studioData'
 import { apiFetch, useApi } from './lib/api'
 import { authClient } from './lib/authClient'
 import About from './components/About'
@@ -12,6 +12,7 @@ import Footer from './components/Footer'
 import Gallery from './components/Gallery'
 import Header from './components/Header'
 import Hero from './components/Hero'
+import LensMark from './components/LensMark'
 import MarqueeBand from './components/MarqueeBand'
 import Services from './components/Services'
 import TermsModal from './components/TermsModal'
@@ -25,6 +26,11 @@ export default function App() {
   // Services are used by the service cards and the basket, so App fetches them once.
   const servicesRequest = useApi('/api/services')
   const services = servicesRequest.data ?? []
+
+  // The page's text and images (headlines, about, FAQ, footer...), which admins edit in the dashboard.
+  // The page waits for them before showing, so visitors never see empty headings.
+  const contentRequest = useApi('/api/content')
+  const content = contentRequest.data
 
   // ---- Who is signed in? ----
   // useSession() asks the server on page load (so a refresh keeps you signed in, thanks to the
@@ -89,6 +95,15 @@ export default function App() {
     )
   }
 
+  if (!content) {
+    return (
+      <div className="flex min-h-svh flex-col items-center justify-center gap-4 bg-night px-5 text-center text-cream">
+        <LensMark className={`size-12 text-gold ${contentRequest.error ? '' : 'animate-spin motion-reduce:animate-none'}`} />
+        {contentRequest.error && <p>Sorry, the site could not be loaded ({contentRequest.error}). Please try again.</p>}
+      </div>
+    )
+  }
+
   return (
     <>
       <Header
@@ -101,22 +116,23 @@ export default function App() {
       />
 
       <main>
-        <Hero />
-        <MarqueeBand label="What we photograph" items={specialisms} />
-        <Gallery />
-        <About />
+        <Hero content={content.hero} />
+        <MarqueeBand label="What we photograph" items={content.marquees.top} />
+        <Gallery content={content.gallery} />
+        <About content={content.about} />
         <Services
+          content={content.services}
           services={services}
           error={servicesRequest.error}
           onAddToBasket={addToBasket}
           onShowTerms={setTermsService}
           onEnquire={setShootType}
         />
-        <MarqueeBand label="Photography" items={photoTalk} tone="gold" size="sm" reverse />
-        <Contact shootType={shootType} onShootTypeChange={setShootType} user={user} />
+        <MarqueeBand label="Photography" items={content.marquees.bottom} tone="gold" size="sm" reverse />
+        <Contact content={content.contact} shootType={shootType} onShootTypeChange={setShootType} user={user} />
       </main>
 
-      <Footer />
+      <Footer content={content.footer} studioEmail={content.contact.email} />
 
       {/* Floating basket button, so the basket is reachable after scrolling */}
       {basketCount > 0 && !isBasketOpen && (

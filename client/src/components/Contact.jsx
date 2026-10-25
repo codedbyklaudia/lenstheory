@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { contactInfo, contactPhoto, shootTypes } from '../data/studioData'
+import { shootTypes } from '../data/studioData'
 import { apiFetch } from '../lib/api'
 import Button from './Button'
 import FaqList from './Faq'
@@ -74,7 +74,8 @@ function Field({ label, htmlFor, className = '', children }) {
 // can pre-select "Wedding" here. Every field below is a CONTROLLED input: React state holds the
 // value, and each input just displays it and reports changes.
 // `user` is the signed-in user (or null): we use it to fill in their name and email for them.
-export default function Contact({ shootType, onShootTypeChange, user }) {
+// `content` is this section's editable text, contact details and FAQ (from /api/content).
+export default function Contact({ content, shootType, onShootTypeChange, user }) {
   const [form, setForm] = useState(emptyForm)
   const [status, setStatus] = useState('idle') // 'idle' -> 'sending' -> 'sent'
   const [error, setError] = useState('')
@@ -129,7 +130,7 @@ export default function Contact({ shootType, onShootTypeChange, user }) {
   // Copy the studio's email address, and show "Copied" for two seconds.
   async function copyEmail() {
     try {
-      await navigator.clipboard.writeText(contactInfo.email)
+      await navigator.clipboard.writeText(content.email)
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
     } catch {
@@ -147,8 +148,8 @@ export default function Contact({ shootType, onShootTypeChange, user }) {
       icon: 'mail',
       label: 'Email',
       value: (
-        <a href={`mailto:${contactInfo.email}`} className="transition hover:text-gold">
-          {contactInfo.email}
+        <a href={`mailto:${content.email}`} className="transition hover:text-gold">
+          {content.email}
         </a>
       ),
       action: (
@@ -161,18 +162,18 @@ export default function Contact({ shootType, onShootTypeChange, user }) {
         </button>
       ),
     },
-    { icon: 'clock', label: 'Reply time', value: contactInfo.replyTime },
-    { icon: 'pin', label: 'Sessions', value: contactInfo.sessions },
+    { icon: 'clock', label: 'Reply time', value: content.replyTime },
+    { icon: 'pin', label: 'Sessions', value: content.sessions },
   ]
 
   // A photo softly behind the section, fading into solid green at the bottom so it joins the footer.
   const background = (
     <>
       <img
-        src={contactPhoto.src}
+        src={content.backgroundImage}
         alt=""
         loading="lazy"
-        style={{ objectPosition: contactPhoto.position }}
+        style={{ objectPosition: 'center 40%' }}
         className="absolute inset-0 -z-20 h-full w-full object-cover"
       />
       <div className="absolute inset-0 -z-10 bg-linear-to-b from-night/80 via-night/75 to-night" />
@@ -189,13 +190,13 @@ export default function Contact({ shootType, onShootTypeChange, user }) {
             number="04"
             title={
               <>
-                Let's make something <em>worth framing</em>
+                {content.title} <em>{content.titleHighlight}</em>
               </>
             }
             doodle="sparkle"
             dark
           >
-            Tell us about your shoot and we will get back to you within two working days.
+            {content.intro}
           </SectionHeading>
 
           <ul className="flex flex-col gap-3">
@@ -228,7 +229,8 @@ export default function Contact({ shootType, onShootTypeChange, user }) {
               </h3>
               <p className="text-ink-soft">
                 We have your enquiry{shootType ? ` for a ${shootType.toLowerCase()} session` : ''} and will
-                reply to <strong className="font-medium text-ink">{form.email}</strong> within two working days.
+                reply to <strong className="font-medium text-ink">{form.email}</strong>{' '}
+                {content.replyTime.toLowerCase()}.
               </p>
               <Button variant="ghost" onClick={handleReset}>
                 Send another enquiry
@@ -390,7 +392,7 @@ export default function Contact({ shootType, onShootTypeChange, user }) {
                     )}
                   </Button>
                   <p className="text-center text-sm text-ink-soft">
-                    We reply within two working days. Your details are only used to answer your enquiry.
+                    We reply {content.replyTime.toLowerCase()}. Your details are only used to answer your enquiry.
                   </p>
                 </div>
               </form>
@@ -402,9 +404,9 @@ export default function Contact({ shootType, onShootTypeChange, user }) {
       {/* Questions, answered right where people are about to enquire */}
       <div className="mt-20 border-t border-cream/20 pt-12 lg:mt-28 lg:grid lg:grid-cols-[1fr_1.6fr] lg:gap-20 xl:gap-28">
         <Reveal as="h3" className="mb-6 font-display text-2xl text-cream sm:text-3xl lg:mb-0">
-          Good to know before you book
+          {content.faqTitle}
         </Reveal>
-        <FaqList />
+        <FaqList faqs={content.faqs} />
       </div>
     </Section>
   )

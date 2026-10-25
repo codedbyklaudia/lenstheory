@@ -1,10 +1,9 @@
-import { faqs } from '../data/studioData'
-
-export default function FaqList() {
+// `faqs` is a list of { question, answer } (from /api/content, set in the admin dashboard).
+export default function FaqList({ faqs }) {
   return (
     <div>
       {faqs.map((item, index) => (
-        <details key={item.question} open={index === 0} className="group border-t border-cream/20 last:border-b">
+        <details key={index} open={index === 0} className="group border-t border-cream/20 last:border-b">
           <summary className="flex cursor-pointer list-none items-center justify-between gap-4 py-4 font-display text-lg text-cream transition hover:translate-x-1 hover:text-gold motion-reduce:hover:translate-x-0 [&::-webkit-details-marker]:hidden">
             {item.question}
             <span
