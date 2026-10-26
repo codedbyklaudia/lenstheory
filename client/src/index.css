@@ -43,6 +43,37 @@
   --animate-wiggle: wiggle 3s ease-in-out infinite;
   --animate-twinkle: twinkle 2.6s ease-in-out infinite;
   --animate-draw: draw 1.6s cubic-bezier(0.65, 0, 0.35, 1) both;
+  --animate-blink: blink 4s ease-in-out infinite;
+  --animate-heartbeat: heartbeat 1.6s ease-in-out infinite;
+  --animate-print: print 5s ease-in-out infinite;
+  --animate-confetti: confetti 1.4s cubic-bezier(0.2, 0.7, 0.3, 1) both;
+
+  /* a confetti piece flying out from the centre to its own spot (--x, --y, --r are set per piece) */
+  @keyframes confetti {
+    0%   { transform: translate(0, 0) scale(0.3) rotate(0deg); opacity: 1; }
+    75%  { opacity: 1; }
+    100% { transform: translate(var(--x), var(--y)) scale(1) rotate(var(--r)); opacity: 0; }
+  }
+
+  /* an instant photo sliding out of the camera, hanging there, then fading (footer mascot) */
+  @keyframes print {
+    0%, 15%  { transform: translateY(0); opacity: 1; }
+    40%, 85% { transform: translateY(62px); opacity: 1; }
+    100%     { transform: translateY(62px); opacity: 0; }
+  }
+
+  /* eyes closing for a moment, every few seconds (the camera mascot on the account page) */
+  @keyframes blink {
+    0%, 92%, 100% { transform: scaleY(1); }
+    96%           { transform: scaleY(0.1); }
+  }
+
+  /* two quick beats, then a rest */
+  @keyframes heartbeat {
+    0%, 40%, 100% { transform: scale(1); }
+    15%           { transform: scale(1.15); }
+    28%           { transform: scale(1.05); }
+  }
 
   /* bob up and down with a slight tilt */
   @keyframes float {

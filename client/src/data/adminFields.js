@@ -104,8 +104,7 @@ export const contentSections = [
       ...heading,
       { name: 'intro', label: 'Intro text', type: 'textarea' },
       { name: 'email', label: 'Studio email address', type: 'text', hint: 'Also shown in the footer' },
-      { name: 'replyTime', label: 'Reply time', type: 'text' },
-      { name: 'sessions', label: 'Where sessions happen', type: 'text' },
+      { name: 'replyTime', label: 'Reply time', type: 'text', hint: 'Shown in the thank-you message after sending' },
       { name: 'backgroundImage', label: 'Background photo', type: 'image' },
       { name: 'faqTitle', label: 'FAQ heading', type: 'text' },
       {
@@ -124,7 +123,6 @@ export const contentSections = [
     key: 'footer',
     label: 'Footer',
     fields: [
-      { name: 'eyebrow', label: 'Small line above the heading', type: 'text' },
       ...heading,
       { name: 'blurb', label: 'Short description', type: 'textarea' },
       { name: 'photos', label: 'Moving photo strip', type: 'strings', itemType: 'image', itemLabel: 'photo' },

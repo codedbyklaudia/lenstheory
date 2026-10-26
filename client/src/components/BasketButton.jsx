@@ -1,4 +1,8 @@
 // The basket icon with a count badge. Used in the header and as a floating button.
+// The badge is placed `absolute`, so the button needs a position: pass `relative` (header) or
+// `fixed` (floating) in className. It is NOT built in here, because an element with both
+// `relative` and `fixed` gets whichever comes later in Tailwind's CSS (relative), and the
+// floating button would then sit at the very bottom of the page instead of floating.
 export default function BasketButton({ count, onClick, className = '' }) {
   return (
     <button
@@ -6,7 +10,7 @@ export default function BasketButton({ count, onClick, className = '' }) {
       onClick={onClick}
       aria-haspopup="dialog"
       aria-label={count > 0 ? `Open basket, ${count} ${count === 1 ? 'hour' : 'hours'} booked` : 'Open basket'}
-      className={`relative inline-flex items-center justify-center ${className}`}
+      className={`inline-flex items-center justify-center ${className}`}
     >
       <svg
         viewBox="0 0 24 24"

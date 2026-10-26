@@ -139,7 +139,6 @@ export const siteContent = {
     intro: 'Tell us about your shoot and we will get back to you within two working days.',
     email: 'hello@lenstheory.co.uk',
     replyTime: 'Within two working days',
-    sessions: 'Studio and on location',
     backgroundImage: '/images/family-photo.jpg',
     faqTitle: 'Good to know before you book',
     faqs: [
@@ -152,7 +151,6 @@ export const siteContent = {
   },
 
   footer: {
-    eyebrow: 'Ready when you are',
     title: 'Your story,',
     titleHighlight: 'beautifully framed.',
     blurb: 'A photography studio for portraits, weddings and family sessions, in the studio and on location.',

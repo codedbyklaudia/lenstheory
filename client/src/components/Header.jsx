@@ -108,7 +108,7 @@ export default function Header({ basketCount, onOpenBasket, user, isAdmin, onSig
           <BasketButton
             count={basketCount}
             onClick={onOpenBasket}
-            className={`p-2 transition ${isSolid ? 'hover:text-ember' : 'hover:text-gold'}`}
+            className={`relative p-2 transition ${isSolid ? 'hover:text-ember' : 'hover:text-gold'}`}
           />
 
           {/* Hamburger (phones and tablets). The three bars turn into an X when the menu is open. */}

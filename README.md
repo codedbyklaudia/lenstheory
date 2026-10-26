@@ -16,7 +16,7 @@ LensTheory/
 ├── client/                  React frontend (Vite + Tailwind)  -> Vercel service `client`
 │   ├── src/
 │   │   ├── components/      UI pieces (Header, Gallery, AuthModal, BasketDrawer...)
-│   │   │   ├── account/     the account page's MySessions + MyGallery tabs
+│   │   │   ├── account/     the account page tabs: MySessions (tickets), MyGallery (polaroids), MyOrders (receipts), MyDetails (press pass)
 │   │   │   └── admin/       the dashboard's editors: FieldInput, ContentEditor, RecordsEditor, ShootsEditor, EnquiryReply
 │   │   ├── data/
 │   │   │   ├── studioData.js   the little that stays hardcoded (nav links, shoot types)

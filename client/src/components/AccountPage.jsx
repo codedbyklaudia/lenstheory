@@ -1,39 +1,38 @@
-import { useEffect, useState } from 'react'
-import { apiFetch } from '../lib/api'
-import { authClient } from '../lib/authClient'
+import { useState } from 'react'
+import { useApi } from '../lib/api'
+import MyDetails from './account/MyDetails'
 import MyGallery from './account/MyGallery'
+import MyOrders from './account/MyOrders'
 import MySessions from './account/MySessions'
+import { CameraBuddy } from './Illustrations'
 import Button from './Button'
+import Doodle, { Squiggle } from './Doodle'
+import Icon from './Icon'
 import LensMark from './LensMark'
 import { gutter } from './Section'
 
 // The customer's own dashboard, shown at /account (App decides which page to show).
 // Any signed-in user can open it, and it only ever shows THEIR data:
-//   My orders    -> GET /api/orders (the server only returns orders with this user's id)
 //   My sessions  -> GET /api/shoots (account/MySessions.jsx)
-//   My gallery   -> GET /api/shoots, the delivered photos (account/MyGallery.jsx)
-//   My details   -> Better Auth's own endpoints: authClient.updateUser() and authClient.changePassword()
-// The open tab is kept in the address (/account?tab=details), so the account menu can link
+//   My gallery   -> the same data: the photos of delivered sessions (account/MyGallery.jsx)
+//   My orders    -> GET /api/orders (account/MyOrders.jsx)
+//   My details   -> Better Auth's own endpoints (account/MyDetails.jsx)
+// This file is the frame: the welcome banner, the tabs, and loading the data ONCE, which is then
+// passed down to the banner's counters and to whichever tab is open.
+// The open tab is kept in the address (/account?tab=gallery), so the account menu can link
 // straight to any tab and a page refresh stays on the same one.
 
-// Exported so the account menu (AccountButton) lists exactly the same tabs.
-// `icon` is the name of an icon in AccountButton.
+// Exported so the account menu (AccountButton) lists exactly the same tabs. `icon` is an Icon name.
 export const accountTabs = [
-  { id: 'orders', label: 'My orders', icon: 'bag' },
   { id: 'sessions', label: 'My sessions', icon: 'calendar' },
   { id: 'gallery', label: 'My gallery', icon: 'image' },
+  { id: 'orders', label: 'My orders', icon: 'bag' },
   { id: 'details', label: 'My details', icon: 'user' },
 ]
 
-const inputClasses =
-  'h-12 w-full rounded-lg border border-line bg-tint px-4 text-ink focus:border-ember focus:bg-cream focus:outline-none focus:ring-2 focus:ring-ember/20'
-const labelClasses = 'mb-1.5 block text-sm font-medium text-ink'
-
-const formatDate = (value) => new Date(value).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
-
 function tabFromAddress() {
   const tab = new URLSearchParams(window.location.search).get('tab')
-  return accountTabs.some((t) => t.id === tab) ? tab : 'orders'
+  return accountTabs.some((t) => t.id === tab) ? tab : 'sessions'
 }
 
 export default function AccountPage({ user, isSessionPending, isAdmin, onSignIn, onSignOut }) {
@@ -42,14 +41,23 @@ export default function AccountPage({ user, isSessionPending, isAdmin, onSignIn,
   function changeTab(tab) {
     setActiveTab(tab)
     // Update the address without reloading the page.
-    window.history.replaceState(null, '', tab === 'orders' ? '/account' : `/account?tab=${tab}`)
+    window.history.replaceState(null, '', `/account?tab=${tab}`)
   }
 
   return (
-    <div className="min-h-svh bg-tint text-ink">
+    <div className="relative isolate min-h-svh overflow-x-clip bg-tint text-ink">
+      {/* Doodles drifting in the page background, behind everything (purely decoration) */}
+      {/* (small enough to sit in the side margins, so they never cover the content) */}
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 hidden overflow-hidden xl:block">
+        <Doodle name="cloud" className="absolute left-2 top-[34rem] size-12 animate-float text-clay" />
+        <Doodle name="flower" className="absolute right-2 top-[44rem] size-12 animate-wiggle text-gold" />
+        <Doodle name="star" className="absolute left-4 top-[64rem] size-8 animate-twinkle text-gold" />
+        <Doodle name="film" className="absolute right-2 top-[84rem] size-12 -rotate-12 text-clay" />
+      </div>
+
       <header className={`flex items-center justify-between gap-4 border-b border-line bg-cream py-4 ${gutter}`}>
-        <a href="/" className="flex items-center gap-2.5 whitespace-nowrap font-display text-xl font-semibold sm:text-2xl">
-          <LensMark className="size-7 text-ember" />
+        <a href="/" className="group flex items-center gap-2.5 whitespace-nowrap font-display text-xl font-semibold sm:text-2xl">
+          <LensMark className="size-7 text-ember transition duration-500 group-hover:rotate-90" />
           <span>
             Lens <span className="text-ember">Theory</span>
           </span>
@@ -57,7 +65,7 @@ export default function AccountPage({ user, isSessionPending, isAdmin, onSignIn,
         <div className="flex items-center gap-2 text-sm sm:gap-3">
           {isAdmin && (
             <a href="/admin" className="hidden whitespace-nowrap font-medium text-ink-soft transition hover:text-ember sm:inline">
-              Admin dashboard
+              Studio dashboard
             </a>
           )}
           <a href="/" className="whitespace-nowrap font-medium text-ink-soft transition hover:text-ember">
@@ -71,269 +79,173 @@ export default function AccountPage({ user, isSessionPending, isAdmin, onSignIn,
         </div>
       </header>
 
-      <main className={`mx-auto max-w-4xl py-12 md:py-16 ${gutter}`}>
+      {/* Full width, with the same side gutters as the rest of the site */}
+      <main className={`py-8 md:py-12 ${gutter}`}>
         {isSessionPending ? (
           <p className="text-ink-soft">Loading&hellip;</p>
         ) : !user ? (
-          <div className="mx-auto flex max-w-md flex-col items-center gap-4 rounded-2xl border border-line bg-cream p-10 text-center">
-            <h1 className="font-display text-3xl">Please sign in</h1>
-            <p className="text-ink-soft">Sign in to see your orders and details.</p>
+          <div className="relative mx-auto flex max-w-md flex-col items-center gap-4 rounded-3xl border border-line bg-cream p-10 text-center">
+            <Doodle name="camera" className="size-16 animate-float text-ember motion-reduce:animate-none" />
+            <h1 className="font-display text-3xl">Who&rsquo;s behind the lens?</h1>
+            <p className="text-ink-soft">Sign in to see your sessions, photos and orders.</p>
             <Button onClick={onSignIn}>Sign in</Button>
           </div>
         ) : (
-          <>
-            <div className="mb-10">
-              <p className="text-sm font-medium uppercase tracking-[0.2em] text-ember">Hello, {user.name.trim().split(/\s+/)[0]}</p>
-              <h1 className="mt-2 font-display text-5xl font-medium tracking-tight sm:text-6xl">
-                Your <em className="italic text-ember">account</em>
-              </h1>
-            </div>
-
-            <div role="tablist" aria-label="Account" className="mb-6 flex flex-wrap gap-2">
-              {accountTabs.map((tab) => {
-                const isActive = tab.id === activeTab
-                return (
-                  <button
-                    key={tab.id}
-                    type="button"
-                    role="tab"
-                    aria-selected={isActive}
-                    onClick={() => changeTab(tab.id)}
-                    className={`rounded-full border px-5 py-2.5 text-sm font-medium transition duration-200 hover:-translate-y-0.5 ${
-                      isActive ? 'border-ink bg-ink text-cream shadow-md' : 'border-ink/25 bg-cream text-ink hover:border-ink'
-                    }`}
-                  >
-                    {tab.label}
-                  </button>
-                )
-              })}
-            </div>
-
-            {activeTab === 'orders' && <MyOrders />}
-            {activeTab === 'sessions' && <MySessions onShowGallery={() => changeTab('gallery')} />}
-            {activeTab === 'gallery' && <MyGallery />}
-            {activeTab === 'details' && <MyDetails user={user} />}
-          </>
+          <Account user={user} activeTab={activeTab} onTabChange={changeTab} />
         )}
       </main>
     </div>
   )
 }
 
-// ---- My orders ----------------------------------------------------------------
-
-const statusLabels = {
-  paid: { label: 'Paid', classes: 'bg-night text-cream' },
-  pending: { label: 'Not paid', classes: 'bg-gold text-ink' },
-  expired: { label: 'Expired', classes: 'bg-line text-ink-soft' },
-}
-
-function MyOrders() {
-  const [orders, setOrders] = useState(null)
-  const [error, setError] = useState('')
-
-  // EFFECT: load this user's orders when the tab opens.
-  useEffect(() => {
-    apiFetch('/api/orders')
-      .then(setOrders)
-      .catch((err) => setError(err.message))
-  }, [])
-
-  if (error) return <p className="text-ember">Sorry, your orders could not be loaded ({error}).</p>
-  if (!orders) return <p className="text-ink-soft">Loading your orders&hellip;</p>
-
-  if (orders.length === 0) {
-    return (
-      <div className="flex flex-col items-start gap-4 rounded-2xl border border-line bg-cream p-8">
-        <p className="font-display text-2xl">No orders yet</p>
-        <p className="text-ink-soft">When you book and pay for a session, it will appear here.</p>
-        <Button href="/#services">Browse sessions</Button>
-      </div>
-    )
-  }
+// Only rendered once we know who is signed in, so the requests below always carry a session.
+function Account({ user, activeTab, onTabChange }) {
+  const shootsRequest = useApi('/api/shoots')
+  const ordersRequest = useApi('/api/orders')
 
   return (
-    <ul className="flex flex-col gap-4">
-      {orders.map((order) => {
-        const status = statusLabels[order.status] ?? statusLabels.pending
-        return (
-          <li key={order.id} className="rounded-2xl border border-line bg-cream">
-            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line px-5 py-4 sm:px-6">
-              <div>
-                <p className="font-medium">Order #{order.id}</p>
-                <p className="text-sm text-ink-soft">
-                  {order.paidAt ? `Paid on ${formatDate(order.paidAt)}` : `Started on ${formatDate(order.createdAt)}`}
-                </p>
-              </div>
-              <span className={`rounded-full px-3 py-1 text-xs font-medium ${status.classes}`}>{status.label}</span>
-            </div>
+    <>
+      <WelcomeBanner user={user} shoots={shootsRequest.data} orders={ordersRequest.data} onTabChange={onTabChange} />
 
-            <ul className="divide-y divide-line px-5 sm:px-6">
-              {order.items.map((item) => (
-                <li key={item.id} className="flex justify-between gap-4 py-3">
-                  <span>
-                    {item.serviceName}
-                    <span className="block text-sm text-ink-soft">
-                      {item.hours} {item.hours === 1 ? 'hour' : 'hours'} &times; £{item.pricePerHour}
-                    </span>
-                  </span>
-                  <span className="font-medium">£{item.hours * item.pricePerHour}</span>
-                </li>
-              ))}
-            </ul>
-
-            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-line px-5 py-4 sm:px-6">
-              <span className="font-display text-2xl">£{order.total}</span>
-              {order.status === 'paid' ? (
-                <a href={`/order/success?order=${order.id}`} className="text-sm font-medium text-ember underline-offset-4 hover:underline">
-                  View receipt &rarr;
-                </a>
-              ) : (
-                <p className="text-sm text-ink-soft">No payment was taken for this order.</p>
+      {/* The tabs: big and clear, each with its icon and how many things are inside */}
+      <div role="tablist" aria-label="Your account" className="mb-8 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:gap-3">
+        {accountTabs.map((tab) => {
+          const isActive = tab.id === activeTab
+          const count = tabCount(tab.id, shootsRequest.data, ordersRequest.data)
+          return (
+            <button
+              key={tab.id}
+              type="button"
+              role="tab"
+              aria-selected={isActive}
+              onClick={() => onTabChange(tab.id)}
+              className={`group flex items-center justify-center gap-2 whitespace-nowrap rounded-2xl border-2 px-3 py-3 text-sm font-medium transition duration-300 sm:justify-start sm:gap-2.5 sm:px-5 sm:text-base ${
+                isActive
+                  ? '-rotate-1 border-ink bg-ink text-cream shadow-[4px_4px_0_var(--color-ember)]'
+                  : 'border-ink/15 bg-cream text-ink hover:-translate-y-0.5 hover:rotate-1 hover:border-ink'
+              }`}
+            >
+              <Icon name={tab.icon} className={`size-5 transition group-hover:scale-110 ${isActive ? 'text-gold' : 'text-ember'}`} />
+              {tab.label}
+              {count > 0 && (
+                <span className={`rounded-full px-2 py-0.5 text-xs ${isActive ? 'bg-gold text-ink' : 'bg-tint text-ink-soft'}`}>{count}</span>
               )}
-            </div>
-          </li>
-        )
-      })}
-    </ul>
-  )
-}
-
-// ---- My details ---------------------------------------------------------------
-// Two separate small forms, so changing your name never needs your password.
-
-function MyDetails({ user }) {
-  return (
-    <div className="grid gap-6 md:grid-cols-2">
-      <NameForm user={user} />
-      <PasswordForm />
-      <p className="text-sm text-ink-soft md:col-span-2">Member since {formatDate(user.createdAt)}.</p>
-    </div>
-  )
-}
-
-function NameForm({ user }) {
-  const [name, setName] = useState(user.name)
-  const [message, setMessage] = useState({ text: '', isError: false })
-  const [isSaving, setIsSaving] = useState(false)
-
-  async function handleSubmit(event) {
-    event.preventDefault()
-    if (!name.trim()) return setMessage({ text: 'Please enter your name', isError: true })
-
-    setIsSaving(true)
-    // Better Auth updates the `user` row, and useSession() everywhere shows the new name straight away.
-    const { error } = await authClient.updateUser({ name: name.trim() })
-    setIsSaving(false)
-    setMessage(error ? { text: error.message ?? 'Could not save', isError: true } : { text: 'Saved', isError: false })
-  }
-
-  return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-4 rounded-2xl border border-line bg-cream p-6">
-      <h2 className="font-display text-2xl">Your details</h2>
-      <div>
-        <label htmlFor="account-name" className={labelClasses}>
-          Name
-        </label>
-        <input
-          id="account-name"
-          type="text"
-          autoComplete="name"
-          value={name}
-          onChange={(event) => {
-            setName(event.target.value)
-            setMessage({ text: '', isError: false })
-          }}
-          className={inputClasses}
-        />
+            </button>
+          )
+        })}
       </div>
-      <div>
-        <p className={labelClasses}>Email</p>
-        <p className="flex h-12 items-center rounded-lg bg-tint px-4 text-ink-soft">{user.email}</p>
-        <p className="mt-1.5 text-xs text-ink-soft">Your email is how you sign in. Contact us if it needs changing.</p>
+
+      {/* `key` replays the fade-in each time you switch tab */}
+      <div key={activeTab} role="tabpanel" className="animate-fade-up motion-reduce:animate-none">
+        {activeTab === 'sessions' && <MySessions request={shootsRequest} onShowGallery={() => onTabChange('gallery')} />}
+        {activeTab === 'gallery' && <MyGallery request={shootsRequest} onShowSessions={() => onTabChange('sessions')} />}
+        {activeTab === 'orders' && <MyOrders request={ordersRequest} />}
+        {activeTab === 'details' && <MyDetails user={user} shoots={shootsRequest.data} orders={ordersRequest.data} />}
       </div>
-      <FormFooter isBusy={isSaving} label="Save name" busyLabel="Saving…" message={message} disabled={name.trim() === user.name} />
-    </form>
+    </>
   )
 }
 
-const emptyPasswords = { currentPassword: '', newPassword: '', confirmPassword: '' }
+// How many things a tab holds, for its little counter (0 = no counter).
+function tabCount(tabId, shoots, orders) {
+  if (tabId === 'sessions') return shoots?.length ?? 0
+  if (tabId === 'gallery') return photoCount(shoots)
+  if (tabId === 'orders') return orders?.filter((order) => order.status === 'paid').length ?? 0
+  return 0
+}
 
-function PasswordForm() {
-  const [form, setForm] = useState(emptyPasswords)
-  const [message, setMessage] = useState({ text: '', isError: false })
-  const [isSaving, setIsSaving] = useState(false)
+const photoCount = (shoots) => shoots?.reduce((sum, shoot) => sum + shoot.photos.length, 0) ?? 0
 
-  function handleChange(event) {
-    setForm({ ...form, [event.target.name]: event.target.value })
-    setMessage({ text: '', isError: false })
-  }
+// ---- The welcome banner -------------------------------------------------------------
 
-  async function handleSubmit(event) {
-    event.preventDefault()
-    if (form.newPassword !== form.confirmPassword) {
-      return setMessage({ text: 'The two new passwords do not match', isError: true })
-    }
+// A different friendly line each visit, picked once when the page loads.
+const greetings = [
+  'Ready for your close-up?',
+  'Everything you need, all in one frame.',
+  'Lights, camera… your account!',
+  'Say cheese! This is your corner of the studio.',
+]
+const greeting = greetings[Math.floor(Math.random() * greetings.length)]
 
-    setIsSaving(true)
-    // Better Auth checks the current password, saves the new one HASHED, and (revokeOtherSessions)
-    // signs out every other browser, in case someone else knew the old password.
-    const { error } = await authClient.changePassword({
-      currentPassword: form.currentPassword,
-      newPassword: form.newPassword,
-      revokeOtherSessions: true,
-    })
-    setIsSaving(false)
+function WelcomeBanner({ user, shoots, orders, onTabChange }) {
+  const firstName = user.name.trim().split(/\s+/)[0]
 
-    if (error) {
-      setMessage({ text: error.message ?? 'Could not change your password', isError: true })
-    } else {
-      setForm(emptyPasswords)
-      setMessage({ text: 'Password changed. Other devices have been signed out.', isError: false })
-    }
-  }
+  // DERIVED DATA: the next session with a date in the future, if there is one.
+  const next = (shoots ?? [])
+    .filter((shoot) => shoot.status === 'scheduled' && new Date(shoot.scheduledAt) > new Date())
+    .sort((a, b) => new Date(a.scheduledAt) - new Date(b.scheduledAt))[0]
+  const daysToGo = next && Math.ceil((new Date(next.scheduledAt) - new Date()) / 86_400_000)
 
-  const fields = [
-    { name: 'currentPassword', label: 'Current password', autoComplete: 'current-password' },
-    { name: 'newPassword', label: 'New password (at least 8 characters)', autoComplete: 'new-password' },
-    { name: 'confirmPassword', label: 'New password again', autoComplete: 'new-password' },
+  const stats = [
+    { tab: 'sessions', value: shoots?.length, label: 'sessions', doodle: 'camera' },
+    { tab: 'gallery', value: shoots && photoCount(shoots), label: 'photos', doodle: 'polaroid' },
+    { tab: 'orders', value: orders?.filter((order) => order.status === 'paid').length, label: 'paid orders', doodle: 'heart' },
   ]
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-4 rounded-2xl border border-line bg-cream p-6">
-      <h2 className="font-display text-2xl">Change password</h2>
-      {fields.map((field) => (
-        <div key={field.name}>
-          <label htmlFor={`account-${field.name}`} className={labelClasses}>
-            {field.label}
-          </label>
-          <input
-            id={`account-${field.name}`}
-            name={field.name}
-            type="password"
-            required
-            minLength={field.name === 'currentPassword' ? undefined : 8}
-            autoComplete={field.autoComplete}
-            value={form[field.name]}
-            onChange={handleChange}
-            className={inputClasses}
-          />
-        </div>
-      ))}
-      <FormFooter isBusy={isSaving} label="Change password" busyLabel="Changing…" message={message} />
-    </form>
-  )
-}
+    <section className="relative mb-8 overflow-hidden rounded-3xl bg-night p-6 text-cream sm:p-10 xl:px-14">
+      {/* Decorative doodles drifting around the edges */}
+      <Doodle name="sparkle" className="absolute right-8 top-6 size-8 animate-twinkle text-gold motion-reduce:animate-none" />
+      <Doodle name="sparkle" className="absolute right-24 top-16 size-4 animate-twinkle text-cream/70 [animation-delay:1.1s] motion-reduce:animate-none" />
+      <Doodle name="sun" className="absolute -bottom-10 -right-6 size-40 animate-slow-spin text-gold/15 motion-reduce:animate-none" />
+      <Doodle name="flash" className="absolute bottom-6 left-[42%] hidden size-10 animate-twinkle text-gold/60 [animation-delay:0.6s] lg:block" />
+      <Doodle name="film" className="absolute -left-6 -top-4 size-24 -rotate-12 text-cream/10" />
 
-function FormFooter({ isBusy, label, busyLabel, message, disabled = false }) {
-  return (
-    <div className="mt-auto flex flex-wrap items-center gap-3 pt-2">
-      <Button type="submit" disabled={isBusy || disabled}>
-        {isBusy ? busyLabel : label}
-      </Button>
-      <p role="status" className={`text-sm ${message.isError ? 'text-ember' : 'text-ink-soft'}`}>
-        {message.text}
-      </p>
-    </div>
+      <div className="relative flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
+        <div className="lg:max-w-xl">
+          <p className="mb-3 text-sm font-medium uppercase tracking-[0.2em] text-gold">{greeting}</p>
+          <h1 className="font-display text-5xl font-medium leading-none tracking-tight sm:text-6xl">
+            Hey,{' '}
+            <span className="relative inline-block italic text-gold">
+              {firstName}!
+              <Squiggle delay={300} className="text-gold" />
+            </span>
+          </h1>
+
+          {/* The most useful thing first: when is the next shoot? */}
+          <div className="mt-6 inline-flex items-center gap-3 rounded-full bg-cream/10 py-2 pl-2 pr-5 text-sm backdrop-blur">
+            <span className="flex size-9 items-center justify-center rounded-full bg-gold text-ink">
+              <Icon name="clock" className="size-4.5" />
+            </span>
+            {next ? (
+              <span>
+                Next shoot in <strong className="font-display text-lg text-gold">{daysToGo === 1 ? '1 day' : `${daysToGo} days`}</strong>:{' '}
+                {next.serviceName}
+              </span>
+            ) : (
+              <span>No shoot booked yet. We&rsquo;ll help you pick a date!</span>
+            )}
+          </div>
+        </div>
+
+        {/* Snappy the camera, waving hello (only where there is room for it) */}
+        <div className="hidden flex-1 justify-center self-center xl:flex">
+          <CameraBuddy className="w-56 2xl:w-64" />
+        </div>
+
+        {/* Little "polaroid" counters; each one opens its tab */}
+        <div className="grid grid-cols-3 gap-3">
+          {stats.map((stat, index) => (
+            <button
+              key={stat.tab}
+              type="button"
+              onClick={() => onTabChange(stat.tab)}
+              style={{ animationDelay: `${index * 120}ms` }}
+              className={`group animate-pop rounded-xl bg-cream p-3 pb-2 text-center text-ink shadow-lg transition duration-300 hover:-translate-y-1 hover:rotate-0 motion-reduce:animate-none sm:w-28 ${
+                ['-rotate-3', 'rotate-2', '-rotate-1'][index]
+              }`}
+            >
+              <span className="flex aspect-square items-center justify-center rounded-md bg-tint">
+                <span className="font-display text-4xl font-medium">{stat.value ?? '–'}</span>
+              </span>
+              <span className="mt-2 flex items-center justify-center gap-1 text-xs font-medium">
+                <Doodle name={stat.doodle} className="size-4 text-ember transition group-hover:scale-125" />
+                {stat.label}
+              </span>
+            </button>
+          ))}
+        </div>
+      </div>
+    </section>
   )
 }
