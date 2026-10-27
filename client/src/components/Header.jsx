@@ -50,7 +50,6 @@ export default function Header({ basketCount, onOpenBasket, user, isAdmin, onSig
 
   return (
     <header
-      id="top"
       className={`fixed inset-x-0 top-0 z-40 animate-header-in border-b transition duration-300 motion-reduce:animate-none ${
         isSolid
           ? 'border-line bg-cream/90 text-ink shadow-sm backdrop-blur-md'

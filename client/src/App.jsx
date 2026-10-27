@@ -163,6 +163,9 @@ export default function App() {
 
   return (
     <>
+      {/* The target of every "#top" link (logo, "Back to top"). It can't be the header itself:
+          the header is `fixed`, so it always counts as "in view" and the browser would not scroll. */}
+      <div id="top" />
       <Header
         basketCount={basketCount}
         onOpenBasket={() => setIsBasketOpen(true)}
